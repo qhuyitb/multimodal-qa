@@ -1,0 +1,7 @@
+# Model configurations
+# whisper:
+#   model_name: "base"
+# translation:
+#   model_name: "Helsinki-NLP/opus-mt-en-vi"
+# embedding:
+#   model_name: "sentence-transformers/all-MiniLM-L6-v2"

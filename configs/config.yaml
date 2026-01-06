@@ -1,0 +1,8 @@
+# Main configuration file
+# models:
+#   whisper:
+#   translation:
+#   embedding:
+# paths:
+#   data_dir:
+#   vector_db:
