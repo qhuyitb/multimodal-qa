@@ -48,16 +48,17 @@ multimodal-qa/
 │   └── models.yaml          # Model configs
 ├── data/
 │   ├── input/
+|   |   ├── videos          # video gốc (mp4, avi, mkv,..)
+|   |   ├── documents       # tài liệu gốc (pdf, docx, txt…)
+|   |   └── optional
+|   |   
 │   ├── output/
-│   │   ├── transcripts/
-│   │   ├── subtitles/
-│   │   ├── translations/
-│   │   └── videos/
+│   │   ├── transcripts/    # Chứa file .txt hoặc .json do whisper extract từ video
+│   │   ├── subtitles/      # Chứa các file subtitle từ transcript
+│   │   ├── translations/   # Chứa transcript hoặc subtitle đã được dịch sang ngôn ngữ khác
+│   │   └── videos/         # Chứa video đầu ra sau khi xử lý
+|   |   └── documents/      # Chứa các extract từ pdf/docx/txt
 │   └── vector_db/
-|
-|
-├── notebooks/
-|
 |
 ├── src/
 |
