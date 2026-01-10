@@ -20,24 +20,41 @@ Hệ thống cho phép:
 
 ### Pipeline 1: Video Processing
 1. **Trích xuất audio** từ video (ffmpeg)
-2. **Speech-to-Text** với timestamps (Whisper/AssemblyAI)
-3. **Dịch transcript** Anh-Việt
-4. **Tạo subtitle files** (.srt/.vtt)
-5. **Burn subtitle** vào video (optional)
-6. **Index vào vector DB** cho QA
+2. **Speech-to-Text** với timestamps & language detection (Whisper / AssemblyAI)
+3. **Lưu transcript gốc** (no translation by default)
+4. **(Optional) Translate transcript based on user request**
+5. **Tạo subtitle files** (.srt / .vtt) theo ngôn ngữ được yêu cầu
+6. **Burn subtitle** vào video (optional)
+7. **Index transcript gốc vào vector DB** cho QA
 
 ### Pipeline 2: Document Processing
-1. **Trích xuất text** từ PDF/DOCX/TXT
-2. **Smart chunking** với overlap để giữ ngữ cảnh
-3. **Dịch từng chunk** với context preservation
-4. **Tạo dual-language document** (song ngữ)
-5. **Index vào vector DB** cho QA
+1. **Trích xuất text** từ PDF / DOCX / TXT
+2. **Language detection**
+3. **Smart chunking** với overlap để giữ ngữ cảnh
+4. **Lưu nội dung gốc để indexing**
+5. **(Optional) Translate chunks based on user request**
+6. **Tạo translated hoặc dual-language document (on-demand)**
+7. **Index nội dung gốc vào vector DB** cho QA
 
 ### QA System
 - **Retrieval-based QA** từ vector database (ChromaDB)
-- **Multilingual embeddings** (EN-VI)
+- **Cross-lingual / multilingual embeddings** (EN–VI)
+- **Answer language adapts to user request**
 - **Timestamp references** cho video
 - **Source citations** trong câu trả lời
+
+
+### 🌐 Language Handling Strategy
+- Hệ thống tự động phát hiện ngôn ngữ gốc của từng video hoặc tài liệu
+- Toàn bộ nội dung được index theo ngôn ngữ gốc để đảm bảo truy xuất chính xác
+- Mặc định **không thực hiện dịch**
+- Việc dịch chỉ được áp dụng **khi người dùng yêu cầu rõ ràng**
+- Người dùng có thể yêu cầu:
+  - Trả lời bằng ngôn ngữ mong muốn (ví dụ: tiếng Việt hoặc tiếng Anh)
+  - Tạo subtitle đã dịch cho video
+  - Tạo phiên bản tài liệu đã dịch hoặc song ngữ
+- Quá trình dịch chỉ diễn ra ở **output layer** và **không ảnh hưởng tới vector index**
+
 
 ## 📁 Cấu trúc dự án
 
