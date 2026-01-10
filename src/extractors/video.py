@@ -4,28 +4,44 @@ import json
 import pathlib
 import warnings
 warnings.filterwarnings("ignore")
-output_dir = "data/output/transcripts"
-os.makedirs(output_dir, exist_ok=True)
 
-def extract_video_text(video_path, output_dir):
+project_root = pathlib.Path(__file__).parent.parent.parent
+output_base_dir = project_root / "data" / "output" / "transcripts"
+os.makedirs(output_base_dir, exist_ok=True)
+
+def extract_video_text(video_path, output_dir=None):
+    
+    if output_dir is None:
+        output_txt_dir = output_base_dir / "txt"
+        output_json_dir = output_base_dir / "json"
+    else:
+        output_dir = pathlib.Path(output_dir)
+        output_txt_dir = output_dir / "txt"
+        output_json_dir = output_dir / "json"
+    
+    os.makedirs(output_txt_dir, exist_ok=True)
+    os.makedirs(output_json_dir, exist_ok=True)
+    
     model = whisper.load_model("medium")
     result = model.transcribe(
-        video_path,
+        str(video_path),
         task="transcribe",
-        fp16 =False,
+        fp16=False,
         verbose=True
     )
     name = pathlib.Path(video_path).stem
-    txt_path = f"{output_dir}/{name}.txt"
-    json_path = f"{output_dir}/{name}.json"
+    txt_path = output_txt_dir / f"{name}.txt"
+    json_path = output_json_dir / f"{name}.json"
     
-    with open(txt_path, "w") as f:
+    with open(txt_path, "w", encoding="utf-8") as f:
         f.write(result["text"])
-    with open(json_path, "w") as f:
+    with open(json_path, "w", encoding="utf-8") as f:
         json.dump(result, f, ensure_ascii=False, indent=2)
         
     return result["text"]
 
 if __name__ == "__main__":
-    pass
+    demo_video = project_root / "data/input/videos/mp4/video_demo.mp4"
+    extract_video_text(demo_video, output_base_dir)
+    # pass
     
