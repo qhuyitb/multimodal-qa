@@ -1,4 +1,4 @@
-[![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-%E2%9A%96%EF%B8%8F-EE4C2C?logo=pytorch&logoColor=white)](https://pytorch.org/)
 [![Docker](https://img.shields.io/badge/Docker-%230db7ed?logo=docker&logoColor=white)](https://www.docker.com/)
 [![HuggingFace](https://img.shields.io/badge/Hugging%20Face-%23FF7A00?logo=huggingface&logoColor=white)](https://huggingface.co/)
@@ -56,7 +56,7 @@ multimodal-qa/
 │   │   ├── transcripts/    # Chứa file .txt hoặc .json do whisper extract từ video
 │   │   ├── subtitles/      # Chứa các file subtitle từ transcript
 │   │   ├── translations/   # Chứa transcript hoặc subtitle đã được dịch sang ngôn ngữ khác
-│   │   └── videos/         # Chứa video đầu ra sau khi xử lý
+│   │   ├── videos/         # Chứa video đầu ra sau khi xử lý
 |   |   └── documents/      # Chứa các extract từ pdf/docx/txt
 │   └── vector_db/
 |
@@ -96,7 +96,7 @@ multimodal-qa/
 ## 🚀 Installation
 
 ### Yêu cầu hệ thống
-- Python 3.12+
+- Python 3.9+
 - ffmpeg (cho xử lý video/audio)
 - CUDA (optional, cho GPU acceleration)
 
