@@ -1,11 +1,9 @@
-from typing import List, Dict, Optional, Any, Tuple
+from typing import List, Dict, Optional, Any
 import chromadb
 from chromadb.config import Settings
 from chromadb.utils import embedding_functions
-import numpy as np
 from pathlib import Path
 import uuid
-
 
 class ChromaVectorStore:
     

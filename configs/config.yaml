@@ -1,8 +1,137 @@
 # Main configuration file
-# models:
-#   whisper:
-#   translation:
-#   embedding:
-# paths:
-#   data_dir:
-#   vector_db:
+
+# Language Detection Configuration
+language_detection:
+  # Method for text-based detection: "auto", "langdetect", "fasttext"
+  text_method: "auto"
+  
+  # Minimum confidence threshold (0.0-1.0)
+  min_confidence: 0.7
+  
+  # Sample size for document detection (characters)
+  document_sample_size: 5000
+  
+  # Audio sample duration for Whisper detection (seconds)
+  audio_sample_duration: 30
+
+# Translation Configuration
+translation:
+  # Enable/disable translation service
+  enabled: true
+  
+  # Default behavior - do not translate unless requested
+  auto_translate: false
+  
+  # Device for translation models: "cpu" or "cuda"
+  device: "cpu"
+  
+  # Maximum sequence length for translation
+  max_length: 512
+  
+  # Batch size for batch translation
+  batch_size: 8
+  
+  # Cache directory for translation models
+  cache_dir: null  # null = use default (~/.cache/huggingface)
+  
+  # Supported language pairs (Helsinki-NLP models)
+  supported_languages:
+    - en  # English
+    - vi  # Vietnamese
+    - zh  # Chinese
+    - ja  # Japanese
+    - ko  # Korean
+    - fr  # French
+    - de  # German
+    - es  # Spanish
+  
+  # Enable pivot translation through English
+  enable_pivot: true
+
+# Cross-Language QA Configuration
+cross_language_qa:
+  # Enable cross-language queries (query lang != source lang)
+  enabled: true
+  
+  # Multilingual embedding model for cross-language retrieval
+  embedding_model: "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"
+  
+  # Translation layer: "output" (translate answer) or "input" (translate query)
+  translation_layer: "output"
+  
+  # Whether to return both original and translated answers
+  return_both: false
+
+# Subtitle Generation Configuration
+subtitles:
+  # Default subtitle formats to generate
+  formats:
+    - "srt"
+    - "vtt"
+  
+  # Maximum characters per subtitle line
+  max_chars_per_line: 42
+  
+  # Maximum lines per subtitle
+  max_lines: 2
+  
+  # Generate dual-language subtitles by default
+  generate_dual_language: false
+
+# Document Processing Configuration
+documents:
+  # Default behavior for document indexing
+  index_original: true
+  index_translation: false
+  
+  # Generate translated document files
+  generate_translated: false
+  
+  # Generate dual-language documents
+  generate_dual_language: false
+  
+  # Chunk size for translation (characters)
+  translation_chunk_size: 2000
+
+# Model Paths
+models:
+  whisper:
+    model_name: "base"
+    device: "cpu"
+  
+  translation:
+    # Inherits from translation config above
+    pass
+  
+  embedding:
+    model_name: "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"
+    device: "cpu"
+
+# Storage Paths
+paths:
+  data_dir: "data"
+  input_dir: "data/input"
+  output_dir: "data/output"
+  vector_db: "data/vector_db"
+  
+  # Language-specific output directories
+  subtitles:
+    srt: "data/output/subtitles/srt"
+    vtt: "data/output/subtitles/vtt"
+  
+  translations:
+    documents: "data/output/translations"
+    subtitles: "data/output/translations/subtitles"
+
+# Evaluation Configuration
+evaluation:
+  # Enable evaluation metrics
+  enabled: true
+  
+  # Metrics to compute
+  compute_translation_quality: true
+  compute_latency_overhead: true
+  compute_qa_correctness: true
+  
+  # Reference translations path (for BLEU scoring)
+  reference_translations_dir: null

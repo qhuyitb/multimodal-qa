@@ -4,10 +4,8 @@ from typing import List, Tuple, Optional, Dict, Any
 import nltk
 from dataclasses import dataclass, field
 
-
 nltk.download('punkt', quiet=True)
 nltk.download('punkt_tab', quiet=True)
-
 
 @dataclass
 class Chunk:

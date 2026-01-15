@@ -2,7 +2,7 @@ from typing import List, Union, Optional
 import numpy as np
 from sentence_transformers import SentenceTransformer
 import torch
-
+import re
 
 class MultilingualEmbedding:
     
@@ -89,7 +89,7 @@ class HybridEmbedding:
         self.keyword_weight = keyword_weight
     
     def _extract_keywords(self, text: str) -> set:
-        import re
+        
         words = re.findall(r'\w+', text.lower())
         return set(words)
     

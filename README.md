@@ -1,18 +1,18 @@
-[![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-%E2%9A%96%EF%B8%8F-EE4C2C?logo=pytorch&logoColor=white)](https://pytorch.org/)
 [![Docker](https://img.shields.io/badge/Docker-%230db7ed?logo=docker&logoColor=white)](https://www.docker.com/)
 [![HuggingFace](https://img.shields.io/badge/Hugging%20Face-%23FF7A00?logo=huggingface&logoColor=white)](https://huggingface.co/)
 [![Whisper](https://img.shields.io/badge/Whisper-OpenAI-lightgrey)](https://github.com/openai/whisper)
 [![ChromaDB](https://img.shields.io/badge/ChromaDB-Vector%20Store-orange)](https://www.trychroma.com/)
 
-# Multimodal-QA
+# Multimodal-QAuv add
 
 **Hệ thống xử lý đa phương thức: Video/Document → Subtitle/Translation → Question Answering**
 
 ## 🎯 Mục tiêu
 
 Hệ thống cho phép:
-- **Pipeline 1: Video → Vietsub + QA** - Xử lý video, tạo subtitle tiếng Việt và hệ thống hỏi đáp
+- **Pipeline 1: Video → Vietsub + QA** - Xử lý video, tạo subtitle tiếng Việt(en) và hệ thống hỏi đáp
 - **Pipeline 2: Document → Dịch + QA** - Dịch tài liệu và tích hợp hệ thống hỏi đáp
 - Sử dụng RAG (Retrieval-Augmented Generation) để trả lời câu hỏi dựa trên nội dung đã index
 
@@ -61,53 +61,112 @@ Hệ thống cho phép:
 ```
 multimodal-qa/
 ├── configs/
-│   ├── config.yaml          # Main config
-│   └── models.yaml          # Model configs
+│   ├── config.yaml              # Main config
+│   └── models.yaml              # Model configs
+│
 ├── data/
 │   ├── input/
-|   |   ├── videos          # video gốc (mp4, avi, mkv,..)
-|   |   ├── documents       # tài liệu gốc (pdf, docx, txt…)
-|   |   └── optional
-|   |   
+│   │   ├── documents/           # Tài liệu gốc
+│   │   │   ├── docx/
+│   │   │   ├── pdf/
+│   │   │   └── txt/
+│   │   ├── videos/              # Video gốc
+│   │   │   ├── avi/
+│   │   │   ├── mkv/
+│   │   │   └── mp4/
+│   │   └── optional/            # Tài liệu bổ sung
+│   │
 │   ├── output/
-│   │   ├── transcripts/    # Chứa file .txt hoặc .json do whisper extract từ video
-│   │   ├── subtitles/      # Chứa các file subtitle từ transcript
-│   │   ├── translations/   # Chứa transcript hoặc subtitle đã được dịch sang ngôn ngữ khác
-│   │   ├── videos/         # Chứa video đầu ra sau khi xử lý
-|   |   └── documents/      # Chứa các extract từ pdf/docx/txt
-│   └── vector_db/
-|
+│   │   ├── documents/           # Documents đã extract
+│   │   │   ├── docx/
+│   │   │   ├── pdf/
+│   │   │   └── txt/
+│   │   ├── transcripts/         # Transcript từ video
+│   │   │   ├── json/
+│   │   │   └── txt/
+│   │   ├── subtitles/           # Subtitle files
+│   │   │   ├── srt/
+│   │   │   └── vtt/
+│   │   ├── translations/        # Nội dung đã dịch
+│   │   │   ├── docx/
+│   │   │   ├── pdf/
+│   │   │   └── txt/
+│   │   └── videos/              # Video đã xử lý
+│   │
+│   └── vector_db/               # ChromaDB storage
+│
+├── datasets/
+│   ├── raw/                     # Raw datasets
+│   │   ├── squad/
+│   │   ├── viquad/
+│   │   ├── xquad_en/
+│   │   └── xquad_vi/
+│   ├── processed/               # Processed datasets
+│   └── splits/                  # Train/val/test splits
+│
+├── examples/
+│   ├── documents/               # Example documents
+│   └── videos/                  # Example videos
+│
 ├── src/
-|
-|	├── api/                # FastAPI REST API
-│   │   ├── routes/         #  video.py, document.py, qa.py
-│   │   ├── schemas/        # Pydantic models
-│   │   └── main.py
-|	|
+│   ├── api/                     # FastAPI REST API
+│   │   ├── routes/
+│   │   │   ├── document.py      # Document endpoints
+│   │   │   ├── video.py         # Video endpoints
+│   │   │   └── qa.py            # QA endpoints
+│   │   ├── schemas/
+│   │   │   ├── document.py      # Document schemas
+│   │   │   ├── video.py         # Video schemas
+│   │   │   └── qa.py            # QA schemas
+│   │   └── main.py              # FastAPI app
+│   │
 │   ├── extractors/
-│   │   ├── video.py         # Video extraction
-│   │   └── document.py      # PDF/DOCX extraction
+│   │   ├── video.py             # Video extraction
+│   │   └── document.py          # PDF/DOCX extraction
+│   │
 │   ├── models/
-│   │   ├── stt.py           # Whisper STT
-│   │   ├── translation.py   # EN-VI translation
-│   │   └── embedding.py     # Text embeddings
+│   │   ├── stt.py               # Whisper STT
+│   │   ├── translation.py       # EN-VI translation
+│   │   └── embedding.py         # Text embeddings
+│   │
 │   ├── pipelines/
-│   │   ├── video_pipeline.py    # Video → Vietsub + QA
-│   │   ├── document_pipeline.py # Doc → Dịch + QA
+│   │   ├── video_pipeline.py    # Video → Transcript + QA
+│   │   ├── document_pipeline.py # Doc → Extract + QA
 │   │   └── qa_pipeline.py       # Q&A system
+│   │
 │   ├── services/
-│   │   ├── subtitle.py      # SRT generation
-│   │   ├── vector_store.py  # ChromaDB ops
-│   │   └── qa_engine.py     # Q&A engine
+│   │   ├── subtitle.py          # SRT/VTT generation
+│   │   ├── vector_store.py      # ChromaDB operations
+│   │   └── qa_engine.py         # Q&A engine
+│   │
 │   ├── core/
-│   │   ├── chunking.py      # Text chunking
-│   │   └── config.py        # Config loader
+│   │   ├── chunking.py          # Text chunking
+│   │   └── config.py            # Config loader
+│   │
 │   └── utils/
-│       ├── logger.py        # Logging
-│       └── helpers.py       # Helpers
-├── tests/                   # Test files
-├── scripts/                 # Setup scripts
-└── [root files]            # pyproject.toml, Dockerfile, etc.
+│       ├── logger.py            # Logging utilities
+│       ├── helpers.py           # Helper functions
+│       └── metrics.py           # Performance metrics
+│
+├── tests/
+│   ├── test_extractors/         # Extractor tests
+│   ├── test_pipelines/          # Pipeline tests
+│   ├── test_services/           # Service tests
+│   ├── conftest.py              # Pytest config
+│   └── run_all_tests.py         # Test runner
+│
+├── scripts/
+│   ├── check_datasets.py        # Dataset verification
+│   ├── download_models.py       # Model downloader
+│   ├── prepare_dataset.py       # Dataset preparation
+│   └── setup_vectordb.py        # Vector DB setup
+│
+├── docker-compose.yml           # Docker compose config
+├── Dockerfile                   # Docker image
+├── main.py                      # Entry point
+├── pyproject.toml               # Project dependencies
+├── pytest.ini                   # Pytest configuration
+└── README.md                    # This file
 ```
 
 ## 🚀 Installation
