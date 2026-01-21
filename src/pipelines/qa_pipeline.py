@@ -1,1 +1,1 @@
-# Question Answering pipeline using ChromaDB
+# Pipeline QA sử dụng ChromaDB

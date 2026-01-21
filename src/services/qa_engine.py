@@ -1,8 +1,3 @@
-"""
-Q&A engine with vector similarity search and cross-language support.
-Supports queries in different languages than source content using multilingual embeddings.
-"""
-
 from typing import Dict, List, Optional, Any
 import logging
 from pathlib import Path
@@ -11,10 +6,6 @@ logger = logging.getLogger(__name__)
 
 
 class QAEngine:
-    """
-    Question Answering engine with multilingual support.
-    Handles cross-language queries using multilingual embeddings and on-demand translation.
-    """
     
     def __init__(
         self,
@@ -24,16 +15,6 @@ class QAEngine:
         language_detector=None,
         default_top_k: int = 5
     ):
-        """
-        Initialize QA engine.
-        
-        Args:
-            vector_store: Vector store for similarity search
-            embedding_model: Model for generating embeddings
-            translation_service: Service for translating answers
-            language_detector: Service for detecting query language
-            default_top_k: Default number of results to retrieve
-        """
         self.vector_store = vector_store
         self.embedding_model = embedding_model
         self.translation_service = translation_service

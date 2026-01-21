@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 from typing import Optional
 
+from src.utils.helpers import get_data_dir
 from src.api.schemas.qa import (
     QARequest,
     QAResponse,
@@ -20,7 +21,7 @@ def get_qa_engine() -> QAEngine:
     global _qa_engine
     if _qa_engine is None:
         config = get_config()
-        vector_store_path = config.get("paths", {}).get("vector_db", "data/vector_db")
+        vector_store_path = config.get("paths", {}).get("vector_db") or str(get_data_dir("vector_db"))
         embedding_model = config.get("cross_language_qa", {}).get(
             "embedding_model",
             "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"
