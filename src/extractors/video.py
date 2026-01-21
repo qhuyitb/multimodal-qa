@@ -1,12 +1,15 @@
+# Trích xuất video (audio -> text)
 import whisper
 import os
 import json
 import pathlib
 import warnings
+from src.utils.helpers import get_data_dir, get_project_root
+
 warnings.filterwarnings("ignore")
 
-project_root = pathlib.Path(__file__).parent.parent.parent
-output_base_dir = project_root / "data" / "output" / "transcripts"
+project_root = get_project_root()
+output_base_dir = get_data_dir("output/transcripts")
 os.makedirs(output_base_dir, exist_ok=True)
 
 def extract_video_text(video_path, output_dir=None):
@@ -41,7 +44,7 @@ def extract_video_text(video_path, output_dir=None):
     return result["text"]
 
 if __name__ == "__main__":
-    demo_video = project_root / "data/input/videos/mp4/video_demo.mp4"
+    demo_video = get_data_dir("input/videos/mp4/video_demo.mp4")
     extract_video_text(demo_video, output_base_dir)
     # pass
     

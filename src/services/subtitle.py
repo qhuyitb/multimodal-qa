@@ -1,8 +1,3 @@
-"""
-Subtitle generation supporting multiple formats and languages.
-Generates SRT and VTT subtitles with optional translation.
-"""
-
 from typing import List, Dict, Optional
 from pathlib import Path
 import logging
@@ -12,7 +7,6 @@ logger = logging.getLogger(__name__)
 
 
 class Subtitle:
-    """Represents a single subtitle entry."""
     
     def __init__(
         self,
@@ -21,15 +15,6 @@ class Subtitle:
         end_time: float,
         text: str
     ):
-        """
-        Initialize subtitle entry.
-        
-        Args:
-            index: Subtitle sequence number
-            start_time: Start time in seconds
-            end_time: End time in seconds
-            text: Subtitle text
-        """
         self.index = index
         self.start_time = start_time
         self.end_time = end_time
@@ -216,9 +201,16 @@ class SubtitleGenerator:
                 results[source_lang].append(output_path)
         
         if self.translation_service:
-            for target_lang in target_langs:
-                if target_lang == source_lang:
-                    continue
+            # Lọc chỉ giữ ngôn ngữ hỗ trợ
+            supported = self.translation_service.get_supported_languages()
+            valid_targets = [lang for lang in target_langs if lang in supported and lang != source_lang]
+            
+            # Log warning cho ngôn ngữ không hỗ trợ
+            invalid_langs = [lang for lang in target_langs if lang not in supported]
+            if invalid_langs:
+                logger.warning(f"Bỏ qua ngôn ngữ không hỗ trợ: {invalid_langs}. Chỉ hỗ trợ: {supported}")
+            
+            for target_lang in valid_targets:
                 
                 translated_subs = self.translate_subtitles(
                     original_subtitles,

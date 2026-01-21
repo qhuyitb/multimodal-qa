@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, UploadFile, File
 from pathlib import Path
 import json
 
+from src.utils.helpers import get_data_dir
 from src.api.schemas.video import (
     VideoProcessRequest,
     VideoProcessResponse,
@@ -27,7 +28,7 @@ async def process_video(request: VideoProcessRequest):
     
     config = get_config()
     pipeline = create_video_pipeline(
-        vector_store_path=Path(config.get("paths", {}).get("vector_db", "data/vector_db")),
+        vector_store_path=Path(config.get("paths", {}).get("vector_db")) if config.get("paths", {}).get("vector_db") else get_data_dir("vector_db"),
         enable_translation=config.get("translation", {}).get("enabled", True)
     )
     
