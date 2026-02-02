@@ -15,7 +15,7 @@ from contextlib import asynccontextmanager
 import time
 from pathlib import Path
 
-from .routes import qa_v2
+from .routes import qa_v2, chat
 # from .routes import qa, video, document  # TODO: Fix imports
 from ..core.config import get_config
 
@@ -87,5 +87,6 @@ async def root():
 # Include routers
 # app.include_router(qa.router)  # TODO: Fix imports
 app.include_router(qa_v2.router)  # Production QA with hybrid retrieval
+app.include_router(chat.router)  # Conversational QA
 # app.include_router(video.router)  # TODO: Fix imports
 # app.include_router(document.router)  # TODO: Fix imports
