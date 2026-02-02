@@ -41,87 +41,108 @@
 - ✅ Performance metrics: translation/inference times
 - ✅ Code cleanup và commit
 
+### Week 11-12: Production API (100%)
+- ✅ POST /api/v1/qa/ask - QA với hybrid retrieval + adaptive QA
+- ✅ GET /api/v1/qa/health - Health check
+- ✅ GET /api/v1/qa/stats - Performance stats
+- ✅ Error handling với proper HTTP status codes
+- ✅ Pydantic schemas: QARequest, QAResponse, SourceInfo
+- ✅ OpenAPI/Swagger docs tự động
+- ✅ Tested: health, Vietnamese/English questions, validation
+
+### Week 11-12 Bonus: Conversational QA (100%)
+- ✅ POST /api/v1/chat/ - Chat với conversation history
+- ✅ Session management: create, list, delete, clear
+- ✅ GET /api/v1/chat/sessions/{id}/history - Get conversation history
+- ✅ Follow-up question reformulation với context
+- ✅ Message tracking: role, content, timestamp, metadata
+- ✅ Tested: multi-turn conversations, context awareness
+
 ---
 
-## 📍 Giai Đoạn Hiện Tại: Week 11-12 - Production API
+## 📍 Giai Đoạn Hiện Tại: Week 13-14 - Documentation & Polish
 
-## 📍 Giai Đoạn Hiện Tại: Week 11-12 - Production API
+## 📍 Giai Đoạn Hiện Tại: Week 13-14 - Documentation & Polish
 
 ### Mục Tiêu
-1. Tích hợp hybrid retrieval + adaptive QA vào API
-2. Endpoints production-ready với error handling
-3. Request/response schemas với Pydantic
-4. Test với Vietnamese/English queries
+1. API documentation đầy đủ
+2. README với examples
+3. Performance benchmarks
+4. Deployment guide
+5. CV-ready summary
 
 ### Nhiệm Vụ
 
-**1. API Endpoints (2 giờ)**
-- [ ] POST /api/v1/qa/ask - QA với hybrid retrieval
-- [ ] POST /api/v1/documents/upload - Upload & index documents
-- [ ] POST /api/v1/videos/upload - Upload & process videos
-- [ ] GET /api/v1/status/{task_id} - Check processing status
-- [ ] GET /api/v1/health - Health check
+**1. API Documentation (1 giờ)**
+- [ ] Update README với API examples
+- [ ] Document all endpoints: QA, Chat, Health, Stats
+- [ ] Add curl examples & Python client examples
+- [ ] Architecture diagram
 
-**2. Request/Response Schemas (1 giờ)**
-- [ ] QARequest: question, language, top_k
-- [ ] QAResponse: answer, score, sources, metadata
-- [ ] DocumentUploadRequest: file, chunk_strategy
-- [ ] ErrorResponse: error code, message, details
+**2. Performance & Testing (1 giờ)**
+- [ ] Measure API latency (p50/p95/p99)
+- [ ] Test với real data (cần index documents trước)
+- [ ] Benchmark conversational vs single-shot QA
+- [ ] Memory usage analysis
 
-**3. Error Handling (30 phút)**
-- [ ] Input validation errors (400)
-- [ ] Model errors (500)
-- [ ] Translation errors với fallback
-- [ ] Proper HTTP status codes
+**3. Deployment Guide (30 phút)**
+- [ ] Docker setup
+- [ ] Environment variables
+- [ ] Production checklist
+- [ ] Monitoring recommendations
 
-**4. Testing (1 giờ)**
-- [ ] Test Vietnamese questions
-- [ ] Test English questions với auto-translation
-- [ ] Test hybrid retrieval integration
-- [ ] Test document upload & indexing
+**4. Polish & Cleanup (30 phút)**
+- [ ] Remove unused code
+- [ ] Fix TODOs in code
+- [ ] Add type hints where missing
+- [ ] Final commit & push
 
 ---
 
-## 🔜 Các Giai Đoạn Tiếp Theo
+## 🔜 Tùy Chọn - Nếu Còn Thời Gian
 
-### Week 13-14: Documentation & Optimization
-- API documentation với OpenAPI/Swagger
-- Performance optimization
-- Deployment guide
-- CV-ready summary
+### Document/Video Upload Endpoints
+- POST /api/v1/documents/upload - Upload & index documents
+- POST /api/v1/videos/upload - Upload & process videos  
+- GET /api/v1/status/{task_id} - Check processing status
+(Đã có code sẵn, chỉ cần fix imports)
 
-### Phase 4B: Fine-tuning Dịch Thuật (Tùy Chọn)
+### Phase 4B: Fine-tuning Dịch Thuật
 - Cải thiện chất lượng dịch en-vi, vi-en
 - Ước tính: 4-6 giờ
 
 ---
 
-## 🎯 Bước Tiếp Theo
+## 🎯 Bước Tiếp Theo Ngay
 
-1. **Tạo production API endpoints:**
+## 🎯 Bước Tiếp Theo Ngay
+
+1. **Test API với real data:**
    ```bash
-   # Check existing API structure
-   ls -la src/api/routes/
-   
-   # Update with hybrid retrieval + adaptive QA
+   # Index sample documents first (cần có data)
+   # Then test QA endpoints
    ```
 
-2. **Test API:**
+2. **Update README:**
    ```bash
-   # Start server
-   .venv/bin/python -m uvicorn src.api.main:app --port 9010
-   
-   # Test endpoints
-   .venv/bin/python scripts/test_api.py
+   # Add API usage examples
+   # Document conversational QA flow
+   ```
+
+3. **Measure performance:**
+   ```bash
+   # Run latency benchmarks
+   # Test memory usage
    ```
 
 ---
 
-## 📊 Timeline Dự Kiến
+## 📊 Timeline & Progress
 
-- Week 11-12 (Production API): 3-4 giờ
-- Tổng dự án: ~92% hoàn thành
-- Còn lại: Documentation, optimization, deployment guide
+- Week 11-12 (Production API): ✅ DONE
+- Week 13-14 (Documentation): 🔄 In Progress
+- Tổng dự án: ~95% hoàn thành
+- Còn lại: Documentation, testing với real data, deployment guide
 
 ---
 
@@ -131,6 +152,34 @@
 - [x] Hybrid retrieval: BM25 + semantic + RRF
 - [x] Smart chunking: video + document
 - [x] Adaptive QA: auto language detection + translation
-- [ ] Production API với error handling
+- [x] Production API với error handling
+- [x] Conversational QA với session management
+- [ ] API tested với real indexed data
 - [ ] API latency < 500ms p95
-- [ ] Documentation đầy đủ
+- [ ] Documentation đầy đủ với examples
+- [ ] Deployment guide
+
+---
+
+## 📝 Summary - Đã Hoàn Thành
+
+**Core Features:**
+- ✅ XLM-RoBERTa QA model (F1 78.49%, EM 60.50%)
+- ✅ Hybrid retrieval: BM25 + semantic search + RRF fusion
+- ✅ Smart chunking: video (sentence/topic) + document (paragraph/section)
+- ✅ Language adaptation: auto EN↔VI translation
+- ✅ Cross-lingual consistency checking
+
+**API Features:**
+- ✅ Production QA endpoint với hybrid retrieval
+- ✅ Conversational QA với multi-turn context
+- ✅ Session management & history tracking
+- ✅ Health checks & performance stats
+- ✅ OpenAPI/Swagger documentation
+- ✅ Proper error handling & validation
+
+**Còn Thiếu:**
+- ⏳ Test với real data (documents/videos cần được index)
+- ⏳ README với detailed examples
+- ⏳ Performance benchmarks (latency/throughput)
+- ⏳ Deployment guide (Docker, env vars, etc.)
