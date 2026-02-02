@@ -49,12 +49,23 @@ def evaluate_model(
     model,
     dataset,
     dataset_name: str,
-    max_samples: int = None
+    max_samples: int = None,
+    answerable_only: bool = False
 ) -> Dict:
     """
     Evaluate model trên dataset
     """
     logger.info(f"Evaluating on {dataset_name}")
+    
+    # Filter answerable questions if requested
+    if answerable_only:
+        original_size = len(dataset)
+        dataset = dataset.filter(
+            lambda x: x.get('answers') and 
+                     x['answers'].get('text') and 
+                     len(x['answers']['text']) > 0
+        )
+        logger.info(f"Filtered to {len(dataset)} answerable (from {original_size} total)")
     
     # Subsample nếu cần
     if max_samples and max_samples < len(dataset):
@@ -65,11 +76,17 @@ def evaluate_model(
     
     logger.info(f"Processing {len(dataset)} samples...")
     for example in tqdm(dataset):
-        # Predict
+        # Skip examples without answers if not filtered
+        if not example.get('answers') or not example['answers'].get('text') or not example['answers']['text']:
+            continue
+            
+        # Predict with optimized settings
         pred = model.predict(
             question=example["question"],
             context=example["context"],
-            top_k=1
+            top_k=1,
+            max_answer_length=50,
+            n_best_size=20
         )
         
         pred_text = pred[0]["text"] if pred else ""
@@ -88,13 +105,15 @@ def evaluate_model(
     metrics = compute_qa_metrics(predictions, references)
     
     logger.info(f"\nResults on {dataset_name}:")
-    logger.info(f"  F1 Score:     {metrics['f1']:.2f}")
-    logger.info(f"  Exact Match:  {metrics['exact_match']:.2f}")
+    logger.info(f"  F1 Score:     {metrics['f1']:.2f}%")
+    logger.info(f"  Exact Match:  {metrics['exact_match']:.2f}%")
+    logger.info(f"  Samples:      {len(predictions)}")
     
     return {
         "dataset": dataset_name,
         "f1": metrics['f1'],
         "exact_match": metrics['exact_match'],
+        "num_samples": len(predictions),
         "predictions": predictions,
         "references": references
     }
@@ -114,64 +133,114 @@ def main():
     
     all_results = {}
     
-    # 1. Evaluate trên ViQuAD test
+    # 1. Evaluate trên ViQuAD test (both mixed and answerable-only)
     
+    logger.info("="*80)
     logger.info("1. ViQuAD Test Set Evaluation")
+    logger.info("="*80)
     
-    viquad = load_from_disk(processed_dir / "viquad")
-    viquad_results = evaluate_model(
+    viquad = load_from_disk(processed_dir / "viquad_augmented")
+    
+    # Mixed evaluation (all questions)
+    logger.info("\n[Mixed - All Questions]")
+    viquad_mixed = evaluate_model(
         model,
-        viquad['test'],
-        "ViQuAD Test"
+        viquad['validation'],
+        "ViQuAD Test (Mixed)",
+        answerable_only=False
     )
-    all_results['viquad_test'] = viquad_results
+    
+    # Answerable-only evaluation
+    logger.info("\n[Answerable Questions Only]")
+    viquad_answerable = evaluate_model(
+        model,
+        viquad['validation'],
+        "ViQuAD Test (Answerable)",
+        answerable_only=True
+    )
+    
+    all_results['viquad_mixed'] = viquad_mixed
+    all_results['viquad_answerable'] = viquad_answerable
     
     # 2. Evaluate trên XQuAD VI
+    logger.info("\n" + "="*80)
     logger.info("2. XQuAD Vietnamese Evaluation")
+    logger.info("="*80)
     
-    xquad_vi = load_from_disk(processed_dir / "xquad_vi")
+    xquad_vi = load_from_disk(processed_dir / "xquad_vi_normalized")
     xquad_vi_results = evaluate_model(
         model,
         xquad_vi['validation'],
-        "XQuAD VI"
+        "XQuAD VI",
+        answerable_only=True
     )
     all_results['xquad_vi'] = xquad_vi_results
     
     # 3. Evaluate trên XQuAD EN
-    
+    logger.info("\n" + "="*80)
     logger.info("3. XQuAD English Evaluation")
+    logger.info("="*80)
     
-    xquad_en = load_from_disk(processed_dir / "xquad_en")
+    xquad_en = load_from_disk(processed_dir / "xquad_en_normalized")
     xquad_en_results = evaluate_model(
         model,
         xquad_en['validation'],
-        "XQuAD EN"
+        "XQuAD EN",
+        answerable_only=True
     )
     all_results['xquad_en'] = xquad_en_results
     
     # Summary
+    logger.info("\n" + "="*80)
     logger.info("EVALUATION SUMMARY")
+    logger.info("="*80)
     
     summary = {
-        "ViQuAD Test": {
-            "F1": viquad_results['f1'],
-            "EM": viquad_results['exact_match']
+        "ViQuAD (Mixed)": {
+            "F1": viquad_mixed['f1'],
+            "EM": viquad_mixed['exact_match'],
+            "Samples": viquad_mixed['num_samples']
+        },
+        "ViQuAD (Answerable)": {
+            "F1": viquad_answerable['f1'],
+            "EM": viquad_answerable['exact_match'],
+            "Samples": viquad_answerable['num_samples']
         },
         "XQuAD VI": {
             "F1": xquad_vi_results['f1'],
-            "EM": xquad_vi_results['exact_match']
+            "EM": xquad_vi_results['exact_match'],
+            "Samples": xquad_vi_results['num_samples']
         },
         "XQuAD EN": {
             "F1": xquad_en_results['f1'],
-            "EM": xquad_en_results['exact_match']
+            "EM": xquad_en_results['exact_match'],
+            "Samples": xquad_en_results['num_samples']
         }
     }
     
-    logger.info("\n" + json.dumps(summary, indent=2))
+    logger.info("\n" + json.dumps(summary, indent=2, ensure_ascii=False))
+    
+    # Performance analysis
+    logger.info("\n" + "="*80)
+    logger.info("PERFORMANCE ANALYSIS")
+    logger.info("="*80)
     
     # Cross-lingual transfer gap
     en_vi_gap = xquad_en_results['f1'] - xquad_vi_results['f1']
-    logger.info(f"\nCross-lingual Transfer Gap (EN - VI): {en_vi_gap:.2f}")
+    logger.info(f"Cross-lingual Transfer Gap (EN - VI): {en_vi_gap:.2f}%")
+    
+    # Answerable vs Mixed gap
+    answerable_gain = viquad_answerable['f1'] - viquad_mixed['f1']
+    logger.info(f"Answerable-only Improvement: {answerable_gain:.2f}%")
+    logger.info(f"Impossible questions: {viquad_mixed['num_samples'] - viquad_answerable['num_samples']}")
+    
+    # Performance assessment
+    if viquad_answerable['f1'] >= 75:
+        logger.info("\n✅ GOOD: Model performs well (≥75% F1 on answerable)")
+    elif viquad_answerable['f1'] >= 70:
+        logger.info("\n⚡ MODERATE: Acceptable but could improve (70-75% F1)")
+    else:
+        logger.info("\n⚠️  LOW: Model needs retraining (<70% F1)")
     
     # Save results
     results_file = results_dir / "xlm_roberta_evaluation.json"

@@ -9,14 +9,10 @@ from peft import LoraConfig, get_peft_model, TaskType
 from datasets import Dataset
 import torch
 from typing import Dict, List, Optional, Tuple
-import logging
 from pathlib import Path
-
-logger = logging.getLogger(__name__)
 
 
 class XLMRobertaQA:
-    # Wrapper cho XLM-RoBERTa QA model với LoRA support
     
     def __init__(
         self,
@@ -29,15 +25,10 @@ class XLMRobertaQA:
         self.model_name = model_name
         self.device = device
         
-        logger.info(f"Loading tokenizer: {model_name}")
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        
-        logger.info(f"Loading model: {model_name}")
         self.model = AutoModelForQuestionAnswering.from_pretrained(model_name)
         
-        # Setup LoRA nếu cần
         if use_lora:
-            logger.info(f"Applying LoRA: r={lora_r}, alpha={lora_alpha}")
             lora_config = LoraConfig(
                 task_type=TaskType.QUESTION_ANS,
                 r=lora_r,
@@ -160,9 +151,13 @@ class XLMRobertaQA:
         self,
         question: str,
         context: str,
-        top_k: int = 1
+        top_k: int = 1,
+        max_answer_length: int = 50,
+        n_best_size: int = 20
     ) -> List[Dict[str, any]]:
         # Inference cho 1 question-context pair
+        self.model.eval()  # Ensure eval mode
+        
         inputs = self.tokenizer(
             question,
             context,
@@ -179,52 +174,86 @@ class XLMRobertaQA:
         start_logits = outputs.start_logits[0]
         end_logits = outputs.end_logits[0]
         
-        # Top-k answers
+        # Lấy sequence_ids để xác định context tokens
+        sequence_ids = inputs.sequence_ids(0)
+        context_start = sequence_ids.index(1) if 1 in sequence_ids else 0
+        context_end = len(sequence_ids) - 1 - sequence_ids[::-1].index(1) if 1 in sequence_ids else len(sequence_ids)
+        
+        # Top-k answers - tối ưu hơn với n_best_size
         results = []
-        start_indexes = torch.argsort(start_logits, descending=True)[:top_k * 2]
-        end_indexes = torch.argsort(end_logits, descending=True)[:top_k * 2]
+        start_indexes = torch.argsort(start_logits, descending=True)[:n_best_size]
+        end_indexes = torch.argsort(end_logits, descending=True)[:n_best_size]
         
         for start_idx in start_indexes:
             for end_idx in end_indexes:
-                if end_idx < start_idx or end_idx - start_idx > 30:
+                # Skip invalid spans
+                if end_idx < start_idx or end_idx - start_idx > max_answer_length:
+                    continue
+                
+                # Chỉ cho phép answers từ context (sequence_id == 1)
+                if start_idx < context_start or end_idx > context_end:
                     continue
                 
                 answer_tokens = inputs["input_ids"][0][start_idx:end_idx + 1]
                 answer_text = self.tokenizer.decode(answer_tokens, skip_special_tokens=True)
                 
-                score = (start_logits[start_idx] + end_logits[end_idx]).item()
+                # Skip empty answers
+                if not answer_text.strip():
+                    continue
+                
+                # Tính score theo product (better than sum)
+                score = (start_logits[start_idx] * end_logits[end_idx]).item()
                 
                 results.append({
-                    "text": answer_text,
+                    "text": answer_text.strip(),
                     "score": score,
                     "start": start_idx.item(),
                     "end": end_idx.item()
                 })
                 
-                if len(results) >= top_k:
+                if len(results) >= top_k * 3:  # Get more candidates
                     break
-            if len(results) >= top_k:
+            if len(results) >= top_k * 3:
                 break
         
-        return sorted(results, key=lambda x: x["score"], reverse=True)
+        # Nếu không tìm thấy answer nào, return best guess từ context
+        if not results:
+            # Tìm span có score cao nhất trong context
+            best_score = float('-inf')
+            best_start, best_end = context_start, context_start
+            
+            for i in range(context_start, min(context_end, context_start + 50)):
+                for j in range(i, min(i + max_answer_length, context_end)):
+                    score = (start_logits[i] * end_logits[j]).item()
+                    if score > best_score:
+                        best_score = score
+                        best_start, best_end = i, j
+            
+            answer_tokens = inputs["input_ids"][0][best_start:best_end + 1]
+            answer_text = self.tokenizer.decode(answer_tokens, skip_special_tokens=True).strip()
+            
+            results.append({
+                "text": answer_text,
+                "score": best_score,
+                "start": best_start,
+                "end": best_end
+            })
+        
+        return sorted(results, key=lambda x: x["score"], reverse=True)[:top_k]
     
     def save(self, output_dir: Path):
-        # Lưu model và tokenizer
         output_dir = Path(output_dir)
         output_dir.mkdir(parents=True, exist_ok=True)
         
         self.model.save_pretrained(output_dir)
         self.tokenizer.save_pretrained(output_dir)
-        logger.info(f"Model saved to {output_dir}")
     
     def load(self, model_dir: Path):
-        # Load model và tokenizer từ checkpoint
         model_dir = Path(model_dir)
         
         self.tokenizer = AutoTokenizer.from_pretrained(model_dir)
         self.model = AutoModelForQuestionAnswering.from_pretrained(model_dir)
         self.model.to(self.device)
-        logger.info(f"Model loaded from {model_dir}")
 
 
 def create_qa_model(
@@ -233,9 +262,8 @@ def create_qa_model(
     **kwargs
 ) -> XLMRobertaQA:
     # Factory function để tạo QA model
-    model = XLMRobertaQA(model_name=model_name, **kwargs)
-    
+    # Nếu có checkpoint_path, ưu tiên dùng nó làm model_name để tránh load 2 lần
     if checkpoint_path and Path(checkpoint_path).exists():
-        model.load(checkpoint_path)
+        return XLMRobertaQA(model_name=str(checkpoint_path), **kwargs)
     
-    return model
+    return XLMRobertaQA(model_name=model_name, **kwargs)
