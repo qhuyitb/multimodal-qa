@@ -4,7 +4,7 @@ from chromadb.config import Settings
 from chromadb.utils import embedding_functions
 from pathlib import Path
 import uuid
-from utils.helpers import get_data_dir
+from ..utils.helpers import get_data_dir
 
 class ChromaVectorStore:
     
