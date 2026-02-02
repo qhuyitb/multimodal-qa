@@ -8,5 +8,13 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Data directories (large files)
 data/
 datasets/
+models/
+results/
+
+# Vector DB files
+*.sqlite3
+chroma.sqlite3
