@@ -2,23 +2,12 @@ from typing import Dict, List, Optional, Union
 from pathlib import Path
 import time
 
+# Chỉ hỗ trợ dịch giữa tiếng Anh và tiếng Việt
 class TranslationService:
     
     MODEL_MAPPING = {
         ("en", "vi"): "Helsinki-NLP/opus-mt-en-vi",
         ("vi", "en"): "Helsinki-NLP/opus-mt-vi-en",
-        ("en", "zh"): "Helsinki-NLP/opus-mt-en-zh",
-        ("zh", "en"): "Helsinki-NLP/opus-mt-zh-en",
-        ("en", "ja"): "Helsinki-NLP/opus-mt-en-jap",
-        ("ja", "en"): "Helsinki-NLP/opus-mt-jap-en",
-        ("en", "ko"): "Helsinki-NLP/opus-mt-en-ko",
-        ("ko", "en"): "Helsinki-NLP/opus-mt-ko-en",
-        ("en", "fr"): "Helsinki-NLP/opus-mt-en-fr",
-        ("fr", "en"): "Helsinki-NLP/opus-mt-fr-en",
-        ("en", "de"): "Helsinki-NLP/opus-mt-en-de",
-        ("de", "en"): "Helsinki-NLP/opus-mt-de-en",
-        ("en", "es"): "Helsinki-NLP/opus-mt-en-es",
-        ("es", "en"): "Helsinki-NLP/opus-mt-es-en",
     }
     
     def __init__(self, device: str = "cpu", cache_dir: Optional[Path] = None, max_length: int = 512):
@@ -34,9 +23,6 @@ class TranslationService:
         
         if (source_lang, target_lang) in self.MODEL_MAPPING:
             return self.MODEL_MAPPING[(source_lang, target_lang)]
-        
-        if source_lang != "en" and target_lang != "en":
-            return "pivot"
         
         return None
     
@@ -70,10 +56,8 @@ class TranslationService:
         texts = [text] if is_single else text
         
         model_name = self._get_model_name(source_lang, target_lang)
-        if model_name == "pivot":
-            intermediate = self.translate(texts, source_lang, "en", batch_size)
-            final = self.translate(intermediate, "en", target_lang, batch_size)
-            return final[0] if is_single else final
+        if not model_name:
+            raise ValueError(f"Không hỗ trợ dịch từ {source_lang} sang {target_lang}. Chỉ hỗ trợ: en <-> vi")
         
         model, tokenizer = self._load_model(source_lang, target_lang)
         
@@ -111,11 +95,7 @@ class TranslationService:
         return self._get_model_name(source_lang, target_lang) is not None
     
     def get_supported_languages(self) -> List[str]:
-        languages = set()
-        for src, tgt in self.MODEL_MAPPING.keys():
-            languages.add(src)
-            languages.add(tgt)
-        return sorted(list(languages))
+        return ["en", "vi"]
     
     def clear_cache(self):
         self._models.clear()

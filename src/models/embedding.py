@@ -144,3 +144,6 @@ class HybridEmbedding:
         
         return hybrid_results
 
+
+# Alias để dễ import
+EmbeddingModel = MultilingualEmbedding
