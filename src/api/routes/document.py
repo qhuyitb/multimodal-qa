@@ -1,7 +1,11 @@
-from fastapi import APIRouter, HTTPException, UploadFile, File
+from fastapi import APIRouter, HTTPException, UploadFile, File, BackgroundTasks
 from pathlib import Path
+import aiofiles
+import uuid
+from datetime import datetime
 
-from src.api.schemas.document import (
+from utils.helpers import get_data_dir
+from api.schemas.document import (
     DocumentProcessRequest,
     DocumentProcessResponse,
     BatchDocumentProcessRequest,
@@ -11,10 +15,128 @@ from src.api.schemas.document import (
     DocumentLanguageInfo,
     DocumentOutputFile
 )
-from src.pipelines.document_pipeline import create_document_pipeline
-from src.core.config import get_config
+from pipelines.document_pipeline import create_document_pipeline
+from core.config import get_config
 
 router = APIRouter(prefix="/document", tags=["Document Processing"])
+processing_tasks = {}
+
+
+@router.post("/upload", response_model=dict)
+async def upload_document(file: UploadFile = File(...)):
+    """Upload document và trả về task_id"""
+    allowed_extensions = {".pdf", ".docx", ".txt", ".doc"}
+    file_ext = Path(file.filename).suffix.lower()
+    
+    if file_ext not in allowed_extensions:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported file format. Allowed: {', '.join(allowed_extensions)}"
+        )
+    
+    task_id = str(uuid.uuid4())
+    ext_folder = "pdf" if file_ext == ".pdf" else "docx" if file_ext in [".docx", ".doc"] else "txt"
+    upload_dir = get_data_dir("input/documents") / ext_folder
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    doc_path = upload_dir / f"{task_id}{file_ext}"
+    
+    async with aiofiles.open(doc_path, 'wb') as out_file:
+        content = await file.read()
+        await out_file.write(content)
+    
+    processing_tasks[task_id] = {
+        "status": "uploaded",
+        "filename": file.filename,
+        "path": str(doc_path),
+        "uploaded_at": datetime.now().isoformat(),
+        "progress": 0
+    }
+    
+    return {
+        "task_id": task_id,
+        "filename": file.filename,
+        "size_bytes": len(content),
+        "status": "uploaded"
+    }
+
+
+@router.post("/process/{task_id}", response_model=dict)
+async def start_document_processing(
+    task_id: str,
+    background_tasks: BackgroundTasks,
+    target_language: str = None,
+    generate_translation: bool = False,
+    generate_dual_language: bool = False,
+    index_content: bool = True,
+    index_translation: bool = False
+):
+    """Bắt đầu xử lý document ở background"""
+    if task_id not in processing_tasks:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
+    task_info = processing_tasks[task_id]
+    if task_info["status"] not in ["uploaded", "failed"]:
+        return {"task_id": task_id, "status": task_info["status"]}
+    
+    processing_tasks[task_id]["status"] = "processing"
+    processing_tasks[task_id]["started_at"] = datetime.now().isoformat()
+    
+    background_tasks.add_task(
+        _process_document_background,
+        task_id=task_id,
+        document_path=Path(task_info["path"]),
+        target_language=target_language,
+        generate_translation=generate_translation,
+        generate_dual_language=generate_dual_language,
+        index_content=index_content,
+        index_translation=index_translation
+    )
+    
+    return {"task_id": task_id, "status": "processing"}
+
+
+async def _process_document_background(
+    task_id: str,
+    document_path: Path,
+    target_language: str,
+    generate_translation: bool,
+    generate_dual_language: bool,
+    index_content: bool,
+    index_translation: bool
+):
+    """Background task xử lý document"""
+    config = get_config()
+    vector_store_path = Path(config.get("paths", {}).get("vector_db")) if config.get("paths", {}).get("vector_db") else get_data_dir("vector_db")
+    enable_translation = config.get("translation", {}).get("enabled", True)
+    
+    pipeline = create_document_pipeline(
+        vector_store_path=vector_store_path,
+        enable_translation=enable_translation
+    )
+    
+    result = pipeline.process(
+        document_path=document_path,
+        target_language=target_language,
+        generate_translation=generate_translation,
+        generate_dual_language=generate_dual_language,
+        index_content=index_content,
+        index_translation=index_translation
+    )
+    
+    processing_tasks[task_id]["status"] = "completed" if result["success"] else "failed"
+    processing_tasks[task_id]["completed_at"] = datetime.now().isoformat()
+    processing_tasks[task_id]["result"] = result
+    processing_tasks[task_id]["progress"] = 100
+    if not result["success"]:
+        processing_tasks[task_id]["error"] = result.get("error", "Unknown error")
+
+
+@router.get("/status/{task_id}", response_model=dict)
+async def get_processing_status(task_id: str):
+    """Lấy trạng thái xử lý document"""
+    if task_id not in processing_tasks:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return processing_tasks[task_id]
 
 
 @router.post("/process", response_model=DocumentProcessResponse)
@@ -24,7 +146,7 @@ async def process_document(request: DocumentProcessRequest):
         raise HTTPException(status_code=404, detail="Document file not found")
     
     config = get_config()
-    vector_store_path = Path(config.get("paths", {}).get("vector_db", "data/vector_db"))
+    vector_store_path = Path(config.get("paths", {}).get("vector_db")) if config.get("paths", {}).get("vector_db") else get_data_dir("vector_db")
     enable_translation = config.get("translation", {}).get("enabled", True)
     
     pipeline = create_document_pipeline(
@@ -72,7 +194,7 @@ async def process_document(request: DocumentProcessRequest):
 @router.post("/batch-process", response_model=BatchDocumentProcessResponse)
 async def batch_process_documents(request: BatchDocumentProcessRequest):
     config = get_config()
-    vector_store_path = Path(config.get("paths", {}).get("vector_db", "data/vector_db"))
+    vector_store_path = Path(config.get("paths", {}).get("vector_db")) if config.get("paths", {}).get("vector_db") else get_data_dir("vector_db")
     enable_translation = config.get("translation", {}).get("enabled", True)
     
     pipeline = create_document_pipeline(

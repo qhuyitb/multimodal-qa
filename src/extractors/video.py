@@ -4,7 +4,7 @@ import os
 import json
 import pathlib
 import warnings
-from src.utils.helpers import get_data_dir, get_project_root
+from utils.helpers import get_data_dir, get_project_root
 
 warnings.filterwarnings("ignore")
 

@@ -1,9 +1,6 @@
 from typing import List, Dict, Optional
 from pathlib import Path
-import logging
 from datetime import timedelta
-
-logger = logging.getLogger(__name__)
 
 
 class Subtitle:
@@ -201,14 +198,8 @@ class SubtitleGenerator:
                 results[source_lang].append(output_path)
         
         if self.translation_service:
-            # Lọc chỉ giữ ngôn ngữ hỗ trợ
             supported = self.translation_service.get_supported_languages()
             valid_targets = [lang for lang in target_langs if lang in supported and lang != source_lang]
-            
-            # Log warning cho ngôn ngữ không hỗ trợ
-            invalid_langs = [lang for lang in target_langs if lang not in supported]
-            if invalid_langs:
-                logger.warning(f"Bỏ qua ngôn ngữ không hỗ trợ: {invalid_langs}. Chỉ hỗ trợ: {supported}")
             
             for target_lang in valid_targets:
                 

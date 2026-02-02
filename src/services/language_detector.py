@@ -13,7 +13,7 @@ class LanguageDetector:
         try:
             import langdetect
             self._langdetect_available = True
-        except:
+        except ImportError:
             pass
         
         try:
@@ -21,7 +21,7 @@ class LanguageDetector:
             model_path = Path.home() / ".cache" / "fasttext" / "lid.176.bin"
             if model_path.exists():
                 self._fasttext_model = fasttext.load_model(str(model_path))
-        except:
+        except ImportError:
             pass
     
     def detect_from_text(self, text: str, method: str = "auto") -> Dict[str, Any]:

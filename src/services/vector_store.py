@@ -4,16 +4,17 @@ from chromadb.config import Settings
 from chromadb.utils import embedding_functions
 from pathlib import Path
 import uuid
+from utils.helpers import get_data_dir
 
 class ChromaVectorStore:
     
     def __init__(
         self,
-        persist_directory: str = "./data/vector_db",
+        persist_directory: Optional[str] = None,
         collection_name: str = "multimodal_qa",
         embedding_function: Optional[Any] = None
     ):
-        self.persist_directory = Path(persist_directory)
+        self.persist_directory = Path(persist_directory) if persist_directory else get_data_dir("vector_db")
         self.persist_directory.mkdir(parents=True, exist_ok=True)
         
         self.client = chromadb.PersistentClient(
@@ -235,3 +236,6 @@ class ChromaVectorStore:
             'metadatas': results['metadatas']
         }
 
+
+# Alias để tương thích với code cũ
+VectorStore = ChromaVectorStore

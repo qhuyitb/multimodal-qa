@@ -1,8 +1,5 @@
 from typing import Dict, List, Optional, Any
-import logging
 from pathlib import Path
-
-logger = logging.getLogger(__name__)
 
 
 class QAEngine:
@@ -20,8 +17,6 @@ class QAEngine:
         self.translation_service = translation_service
         self.language_detector = language_detector
         self.default_top_k = default_top_k
-        
-        logger.info("QA engine initialized with multilingual support")
     
     def query(
         self,
@@ -162,10 +157,10 @@ def create_qa_engine(
     enable_translation: bool = True,
     **kwargs
 ) -> QAEngine:
-    from src.services.vector_store import VectorStore
-    from src.models.embedding import EmbeddingModel
-    from src.models.translation import get_translation_service
-    from src.services.language_detector import LanguageDetector
+    from services.vector_store import VectorStore
+    from models.embedding import EmbeddingModel
+    from models.translation import get_translation_service
+    from services.language_detector import LanguageDetector
     
     vector_store = VectorStore(vector_store_path)
     embedding_model = EmbeddingModel(model_name=embedding_model_name)
