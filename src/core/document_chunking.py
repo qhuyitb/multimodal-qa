@@ -310,36 +310,3 @@ class DocumentChunker:
         if metadata:
             chunk["metadata"] = metadata
         return chunk
-
-
-This is the second paragraph with more details.
-
-## Section 1
-
-This section has information about topic 1.
-
-### Subsection 1.1
-
-More detailed information here.
-
-## Section 2
-
-This section talks about topic 2. It has multiple paragraphs.
-
-This is the second paragraph of section 2.
-    """
-    
-    chunker = DocumentChunker(max_chunk_size=200)
-    
-    print("=== Paragraph-based Chunking ===")
-    chunks = chunker.chunk_by_paragraph(sample_text)
-    for i, chunk in enumerate(chunks, 1):
-        print(f"\nChunk {i}: {chunk['char_count']} chars")
-        print(f"Text: {chunk['text'][:80]}...")
-    
-    print("\n\n=== Section-based Chunking ===")
-    chunks = chunker.chunk_by_section(sample_text)
-    for i, chunk in enumerate(chunks, 1):
-        print(f"\nChunk {i}: {chunk.get('header', 'No header')}")
-        print(f"Level: {chunk.get('level', 0)}")
-        print(f"Text: {chunk['text'][:80]}...")
