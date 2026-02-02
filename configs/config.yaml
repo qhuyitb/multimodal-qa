@@ -123,6 +123,75 @@ paths:
     documents: "data/output/translations"
     subtitles: "data/output/translations/subtitles"
 
+# Data Augmentation Configuration
+data_augmentation:
+  # Enable data augmentation
+  enabled: false
+  
+  # Augmentation methods: synonym, back_translation
+  methods:
+    - "synonym"
+    - "back_translation"
+  
+  # Number of augmentations per example
+  num_augmentations: 2
+  
+  # Augment train split only
+  train_only: true
+  
+  # Maximum training examples to augment (null = all)
+  max_train_examples: null
+  
+  # Device for translation-based augmentation
+  device: "cpu"
+  
+  # Back-translation intermediate language
+  back_translation_lang: "en"
+  
+  # Synonym replacement config
+  synonym_replacement:
+    num_replacements: 2
+    preserve_entities: true
+
+# Fine-tuning Configuration
+fine_tuning:
+  # QA Model (XLM-RoBERTa)
+  qa_model:
+    base_model: "xlm-roberta-base"
+    use_lora: true
+    lora_r: 16
+    lora_alpha: 32
+    target_modules: ["query", "value", "key"]
+    
+    # Stage 1: EN warm-up
+    stage1:
+      learning_rate: 2e-5
+      batch_size: 8
+      epochs: 1
+      warmup_ratio: 0.1
+      max_length: 384
+      doc_stride: 128
+    
+    # Stage 2: VI fine-tune
+    stage2:
+      learning_rate: 3e-5
+      batch_size: 8
+      epochs: 3
+      warmup_ratio: 0.1
+      max_length: 384
+      doc_stride: 128
+  
+  # Translation Model (Helsinki-NLP)
+  translation_model:
+    base_model: "Helsinki-NLP/opus-mt-en-vi"
+    learning_rate: 3e-5
+    batch_size: 8
+    epochs: 3
+    warmup_steps: 500
+    max_length: 512
+    save_steps: 500
+    eval_steps: 500
+
 # Evaluation Configuration
 evaluation:
   # Enable evaluation metrics

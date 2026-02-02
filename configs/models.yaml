@@ -1,7 +1,12 @@
 # Model configurations
+qa_model:
+  model_name: "models/xlm_roberta_qa/stage2_best"
+  use_lora: false
+
+embedding:
+  model_name: "keepitreal/vietnamese-sbert"
+
 # whisper:
 #   model_name: "base"
 # translation:
 #   model_name: "Helsinki-NLP/opus-mt-en-vi"
-# embedding:
-#   model_name: "sentence-transformers/all-MiniLM-L6-v2"
