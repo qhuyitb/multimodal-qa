@@ -1,16 +1,16 @@
 from fastapi import APIRouter, HTTPException, Depends
 from typing import Optional
 
-from utils.helpers import get_data_dir
-from api.schemas.qa import (
+from ...utils.helpers import get_data_dir
+from ..schemas.qa import (
     QARequest,
     QAResponse,
     BatchQARequest,
     BatchQAResponse,
     SourceInfo
 )
-from services.qa_engine import QAEngine, create_qa_engine
-from core.config import get_config
+from ...services.qa_engine import QAEngine, create_qa_engine
+from ...core.config import get_config
 
 router = APIRouter(prefix="/qa", tags=["Question Answering"])
 

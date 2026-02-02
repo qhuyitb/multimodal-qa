@@ -25,102 +25,112 @@
 - ✅ Code đã tối ưu (không logger, icons, prints dài dòng)
 - ⏳ Test API toàn diện chưa xong
 
+### Week 7-8: Smart Chunking + Hybrid Retrieval (100%)
+- ✅ BM25 retrieval với BM25Okapi
+- ✅ Semantic search với sentence-transformers
+- ✅ Reciprocal Rank Fusion (RRF) cho hybrid search
+- ✅ VideoChunker: sentence-based + topic-based chunking
+- ✅ DocumentChunker: paragraph + section + recursive + markdown chunking
+- ✅ Test và cleanup code
+
+### Week 9-10: Language Adaptation & Cross-lingual QA (100%)
+- ✅ AdaptiveQAService với auto language detection
+- ✅ Auto translation: EN ↔ VI với Helsinki-NLP opus-mt models
+- ✅ Cross-lingual consistency checking
+- ✅ XQuAD parallel benchmark (1190 EN-VI samples)
+- ✅ Performance metrics: translation/inference times
+- ✅ Code cleanup và commit
+
 ---
 
-## 📍 Giai Đoạn Hiện Tại: Phase 6 - Đánh Giá
+## 📍 Giai Đoạn Hiện Tại: Week 11-12 - Production API
+
+## 📍 Giai Đoạn Hiện Tại: Week 11-12 - Production API
 
 ### Mục Tiêu
-1. Đánh giá model Stage 2 trên ViQuAD test set
-2. Đo các metrics hiệu năng (F1, EM, latency)
-3. So sánh với baseline
-4. Tạo visualizations cho CV
+1. Tích hợp hybrid retrieval + adaptive QA vào API
+2. Endpoints production-ready với error handling
+3. Request/response schemas với Pydantic
+4. Test với Vietnamese/English queries
 
 ### Nhiệm Vụ
 
-**1. Đánh Giá Model (2 giờ)**
-- [ ] Chạy evaluation script: `scripts/evaluate_stage2.py`
-- [ ] Metrics: F1 Score, Exact Match
-- [ ] Performance: Latency (p50/p95/p99), Throughput
-- [ ] Kết quả mong đợi: F1 78-81%, EM 65-70%
+**1. API Endpoints (2 giờ)**
+- [ ] POST /api/v1/qa/ask - QA với hybrid retrieval
+- [ ] POST /api/v1/documents/upload - Upload & index documents
+- [ ] POST /api/v1/videos/upload - Upload & process videos
+- [ ] GET /api/v1/status/{task_id} - Check processing status
+- [ ] GET /api/v1/health - Health check
 
-**2. Test API (30 phút)**
-- [ ] Health check
-- [ ] QA endpoint với câu hỏi tiếng Việt
-- [ ] Upload & index documents
-- [ ] Polling status
-- [ ] Xử lý lỗi
+**2. Request/Response Schemas (1 giờ)**
+- [ ] QARequest: question, language, top_k
+- [ ] QAResponse: answer, score, sources, metadata
+- [ ] DocumentUploadRequest: file, chunk_strategy
+- [ ] ErrorResponse: error code, message, details
 
-**3. Báo Cáo So Sánh (1 giờ)**
-Tạo bảng so sánh:
-| Metric | Baseline (28K) | Stage 2 (55K) | Cải Thiện |
-|--------|---------------|---------------|-----------|
-| F1 Score | 76-78% | 78-81% | +2-4% |
-| Exact Match | 63-66% | 65-70% | +2-4% |
-| Latency | ? | ? | ? |
+**3. Error Handling (30 phút)**
+- [ ] Input validation errors (400)
+- [ ] Model errors (500)
+- [ ] Translation errors với fallback
+- [ ] Proper HTTP status codes
 
-**4. Visualization (30 phút)**
-- [ ] Biểu đồ so sánh F1/EM
-- [ ] Phân phối latency
-- [ ] Đồ thị tác động của dataset size
+**4. Testing (1 giờ)**
+- [ ] Test Vietnamese questions
+- [ ] Test English questions với auto-translation
+- [ ] Test hybrid retrieval integration
+- [ ] Test document upload & indexing
 
 ---
 
 ## 🔜 Các Giai Đoạn Tiếp Theo
 
+### Week 13-14: Documentation & Optimization
+- API documentation với OpenAPI/Swagger
+- Performance optimization
+- Deployment guide
+- CV-ready summary
+
 ### Phase 4B: Fine-tuning Dịch Thuật (Tùy Chọn)
 - Cải thiện chất lượng dịch en-vi, vi-en
 - Ước tính: 4-6 giờ
-
-### Phase 7: Tối Ưu Production
-- Quantization model (8-bit/4-bit)
-- Caching layer
-- Load balancing
-- Monitoring
-
-### Phase 8: Tài Liệu
-- Sơ đồ kiến trúc
-- API documentation
-- Hướng dẫn deployment
-- Báo cáo cho CV
 
 ---
 
 ## 🎯 Bước Tiếp Theo
 
-1. **Chạy evaluation:**
+1. **Tạo production API endpoints:**
    ```bash
-   cd /path/to/multimodal-qa
-   PYTHONPATH=$PWD .venv/bin/python scripts/evaluate_stage2.py
+   # Check existing API structure
+   ls -la src/api/routes/
+   
+   # Update with hybrid retrieval + adaptive QA
    ```
 
 2. **Test API:**
    ```bash
-   # Khởi động server
+   # Start server
    .venv/bin/python -m uvicorn src.api.main:app --port 9010
    
-   # Test endpoints (terminal khác)
+   # Test endpoints
    .venv/bin/python scripts/test_api.py
    ```
-
-3. **Tạo báo cáo:**
-   - Tổng hợp metrics
-   - Thêm bảng so sánh
-   - Tạo biểu đồ
 
 ---
 
 ## 📊 Timeline Dự Kiến
 
-- Phase 6 (Đánh giá): 2-3 giờ
-- Tổng dự án: ~95% hoàn thành
-- Còn lại: Testing, documentation, hoàn thiện
+- Week 11-12 (Production API): 3-4 giờ
+- Tổng dự án: ~92% hoàn thành
+- Còn lại: Documentation, optimization, deployment guide
 
 ---
 
 ## 🏆 Tiêu Chí Thành Công
 
-- [x] Model F1 > 78% trên ViQuAD test
-- [ ] API latency < 200ms p95
-- [ ] Test coverage đầy đủ
-- [ ] Tài liệu chuyên nghiệp
-- [ ] Kết quả & visualizations cho CV
+- [x] Model F1 78.49% trên ViQuAD test
+- [x] Hybrid retrieval: BM25 + semantic + RRF
+- [x] Smart chunking: video + document
+- [x] Adaptive QA: auto language detection + translation
+- [ ] Production API với error handling
+- [ ] API latency < 500ms p95
+- [ ] Documentation đầy đủ

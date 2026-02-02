@@ -82,7 +82,7 @@ def evaluate_cross_lingual_consistency(
         results["similarities"].append(consistency["similarity"])
         results["score_gaps"].append(consistency["score_gap"])
     
-    print()  # New line after progress
+    print()  
     
     # Calculate metrics
     total = len(parallel_data)
@@ -108,25 +108,23 @@ def evaluate_cross_lingual_consistency(
 
 def print_results(results: Dict):
     """Pretty print results"""
-    print("\n" + "="*80)
     print("  CROSS-LINGUAL QA BENCHMARK RESULTS")
-    print("="*80 + "\n")
     
     print(f"Consistency Metrics:")
-    print(f"  Consistency Rate:     {results['consistency_rate']:.2%}")
-    print(f"  Avg Similarity:       {results['avg_similarity']:.4f}")
-    print(f"  Avg Score Gap:        {results['avg_score_gap']:.4f}")
+    print(f"  Consistency Rate:{results['consistency_rate']:.2%}")
+    print(f"  Avg Similarity:{results['avg_similarity']:.4f}")
+    print(f"  Avg Score Gap: {results['avg_score_gap']:.4f}")
     print()
     
     print(f"Counts:")
-    print(f"  Consistent:           {results['consistent_count']}/{results['total_samples']}")
-    print(f"  Inconsistent:         {results['inconsistent_count']}/{results['total_samples']}")
+    print(f"  Consistent:{results['consistent_count']}/{results['total_samples']}")
+    print(f"  Inconsistent:{results['inconsistent_count']}/{results['total_samples']}")
     print()
     
     print(f"Performance:")
-    print(f"  Avg Translation:      {results['avg_translation_time_ms']:.2f} ms")
-    print(f"  Avg Inference:        {results['avg_inference_time_ms']:.2f} ms")
-    print(f"  Total Translations:   {results['total_translations']}")
+    print(f"  Avg Translation:{results['avg_translation_time_ms']:.2f} ms")
+    print(f"  Avg Inference:{results['avg_inference_time_ms']:.2f} ms")
+    print(f"  Total Translations:{results['total_translations']}")
     print()
     
     # Interpretation
@@ -149,9 +147,7 @@ def print_results(results: Dict):
 
 
 def main():
-    print("="*80)
     print("  CROSS-LINGUAL QA BENCHMARK")
-    print("="*80)
     
     # Load model
     print("\nLoading adaptive QA service...")
@@ -173,16 +169,15 @@ def main():
     results = evaluate_cross_lingual_consistency(
         adaptive_qa,
         parallel_data,
-        max_samples=50  # Reasonable sample size
+        max_samples=50  
     )
     
     # Print results
     print_results(results)
     
     # Example queries
-    print("\n" + "="*80)
-    print("  EXAMPLE QUERIES")
-    print("="*80 + "\n")
+  
+    print("EXAMPLE QUERIES")
     
     sample = parallel_data[0]
     
@@ -210,8 +205,7 @@ def main():
     print(f"   Score: {result_vi.score:.4f}, Translated: {result_vi.translated}")
     print()
     
-    print("="*80)
-    print("Benchmark complete!")
+
 
 
 if __name__ == "__main__":

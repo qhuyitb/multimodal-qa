@@ -4,8 +4,8 @@ import aiofiles
 import uuid
 from datetime import datetime
 
-from utils.helpers import get_data_dir
-from api.schemas.document import (
+from ...utils.helpers import get_data_dir
+from ..schemas.document import (
     DocumentProcessRequest,
     DocumentProcessResponse,
     BatchDocumentProcessRequest,
@@ -15,8 +15,8 @@ from api.schemas.document import (
     DocumentLanguageInfo,
     DocumentOutputFile
 )
-from pipelines.document_pipeline import create_document_pipeline
-from core.config import get_config
+from ...pipelines.document_pipeline import create_document_pipeline
+from ...core.config import get_config
 
 router = APIRouter(prefix="/document", tags=["Document Processing"])
 processing_tasks = {}

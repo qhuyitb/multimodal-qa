@@ -5,8 +5,8 @@ import aiofiles
 import uuid
 from datetime import datetime
 
-from utils.helpers import get_data_dir
-from api.schemas.video import (
+from ...utils.helpers import get_data_dir
+from ..schemas.video import (
     VideoProcessRequest,
     VideoProcessResponse,
     SubtitleGenerateRequest,
@@ -15,10 +15,10 @@ from api.schemas.video import (
     SubtitleInfo,
     TranscriptSegment
 )
-from pipelines.video_pipeline import create_video_pipeline
-from services.subtitle import SubtitleGenerator
-from models.translation import get_translation_service
-from core.config import get_config
+from ...pipelines.video_pipeline import create_video_pipeline
+from ...services.subtitle import SubtitleGenerator
+from ...models.translation import get_translation_service
+from ...core.config import get_config
 
 router = APIRouter(prefix="/video", tags=["Video Processing"])
 processing_tasks = {}
