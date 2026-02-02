@@ -52,7 +52,7 @@ def evaluate_cross_lingual_consistency(
     if max_samples:
         parallel_data = parallel_data[:max_samples]
     
-    print(f"\n🔍 Evaluating cross-lingual consistency on {len(parallel_data)} samples...\n")
+    print(f"\nEvaluating cross-lingual consistency on {len(parallel_data)} samples...\n")
     
     results = {
         "consistent": 0,
@@ -112,40 +112,40 @@ def print_results(results: Dict):
     print("  CROSS-LINGUAL QA BENCHMARK RESULTS")
     print("="*80 + "\n")
     
-    print(f"📊 Consistency Metrics:")
+    print(f"Consistency Metrics:")
     print(f"  Consistency Rate:     {results['consistency_rate']:.2%}")
     print(f"  Avg Similarity:       {results['avg_similarity']:.4f}")
     print(f"  Avg Score Gap:        {results['avg_score_gap']:.4f}")
     print()
     
-    print(f"📈 Counts:")
+    print(f"Counts:")
     print(f"  Consistent:           {results['consistent_count']}/{results['total_samples']}")
     print(f"  Inconsistent:         {results['inconsistent_count']}/{results['total_samples']}")
     print()
     
-    print(f"⚡ Performance:")
+    print(f"Performance:")
     print(f"  Avg Translation:      {results['avg_translation_time_ms']:.2f} ms")
     print(f"  Avg Inference:        {results['avg_inference_time_ms']:.2f} ms")
     print(f"  Total Translations:   {results['total_translations']}")
     print()
     
     # Interpretation
-    print(f"💡 Interpretation:")
+    print(f"Interpretation:")
     if results['consistency_rate'] >= 0.85:
-        print(f"  ✅ Excellent cross-lingual consistency!")
+        print(f"  Excellent cross-lingual consistency!")
     elif results['consistency_rate'] >= 0.75:
-        print(f"  ✅ Good cross-lingual consistency")
+        print(f"  Good cross-lingual consistency")
     elif results['consistency_rate'] >= 0.65:
-        print(f"  ⚠️  Moderate consistency - consider improving translation")
+        print(f"  Moderate consistency - consider improving translation")
     else:
-        print(f"  ❌ Low consistency - investigate translation quality")
+        print(f"  Low consistency - investigate translation quality")
     
     if results['avg_score_gap'] < 0.05:
-        print(f"  ✅ Very stable confidence scores across languages")
+        print(f"  Very stable confidence scores across languages")
     elif results['avg_score_gap'] < 0.15:
-        print(f"  ✅ Acceptable score variance")
+        print(f"  Acceptable score variance")
     else:
-        print(f"  ⚠️  High score variance - model may be language-sensitive")
+        print(f"  High score variance - model may be language-sensitive")
 
 
 def main():
@@ -154,7 +154,7 @@ def main():
     print("="*80)
     
     # Load model
-    print("\n📦 Loading adaptive QA service...")
+    print("\nLoading adaptive QA service...")
     model_path = str(project_root / "models/xlm_roberta_qa/stage2_best")
     adaptive_qa = create_adaptive_qa_service(
         model_path=model_path,
@@ -162,12 +162,12 @@ def main():
         default_language="vi",
         auto_translate=True
     )
-    print("✅ Model loaded")
+    print("Model loaded")
     
     # Load dataset
-    print("\n📚 Loading XQuAD parallel dataset...")
+    print("\nLoading XQuAD parallel dataset...")
     parallel_data = load_parallel_dataset()
-    print(f"✅ Loaded {len(parallel_data)} parallel samples")
+    print(f"Loaded {len(parallel_data)} parallel samples")
     
     # Run benchmark
     results = evaluate_cross_lingual_consistency(
@@ -186,8 +186,8 @@ def main():
     
     sample = parallel_data[0]
     
-    print("📝 Question (EN):", sample["question_en"])
-    print("📝 Question (VI):", sample["question_vi"])
+    print("Question (EN):", sample["question_en"])
+    print("Question (VI):", sample["question_vi"])
     print()
     
     # Answer in English
@@ -196,7 +196,7 @@ def main():
         sample["context_vi"],
         target_language="en"
     )
-    print(f"🇬🇧 Answer (EN): {result_en.answer}")
+    print(f"Answer (EN): {result_en.answer}")
     print(f"   Score: {result_en.score:.4f}, Translated: {result_en.translated}")
     print()
     
@@ -206,12 +206,12 @@ def main():
         sample["context_vi"],
         target_language="vi"
     )
-    print(f"🇻🇳 Answer (VI): {result_vi.answer}")
+    print(f"Answer (VI): {result_vi.answer}")
     print(f"   Score: {result_vi.score:.4f}, Translated: {result_vi.translated}")
     print()
     
     print("="*80)
-    print("✅ Benchmark complete!")
+    print("Benchmark complete!")
 
 
 if __name__ == "__main__":
