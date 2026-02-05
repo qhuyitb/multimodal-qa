@@ -236,11 +236,11 @@ def main():
     
     # Performance assessment
     if viquad_answerable['f1'] >= 75:
-        logger.info("\n✅ GOOD: Model performs well (≥75% F1 on answerable)")
+        logger.info("\nGOOD: Model performs well (≥75% F1 on answerable)")
     elif viquad_answerable['f1'] >= 70:
-        logger.info("\n⚡ MODERATE: Acceptable but could improve (70-75% F1)")
+        logger.info("\nMODERATE: Acceptable but could improve (70-75% F1)")
     else:
-        logger.info("\n⚠️  LOW: Model needs retraining (<70% F1)")
+        logger.info("\nLOW: Model needs retraining (<70% F1)")
     
     # Save results
     results_file = results_dir / "xlm_roberta_evaluation.json"
