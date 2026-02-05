@@ -3,8 +3,11 @@
 **Production-ready multilingual Question Answering system with hybrid retrieval, conversational AI, and cross-lingual support.**
 
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-blue.svg)](https://www.python.org/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-Deep_Learning-ee4c2c.svg)](https://pytorch.org/)
+[![HuggingFace](https://img.shields.io/badge/HuggingFace-Transformers-ffcc00.svg)](https://huggingface.co/docs/transformers)
+[![RAG](https://img.shields.io/badge/RAG-Hybrid_Retrieval-success.svg)]()
+[![ChromaDB](https://img.shields.io/badge/ChromaDB-Vector_DB-3b82f6.svg)](https://www.trychroma.com/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-green.svg)](https://fastapi.tiangolo.com/)
-[![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-red.svg)](https://pytorch.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Features
