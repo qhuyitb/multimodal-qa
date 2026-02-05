@@ -381,12 +381,12 @@
 #         batch_size=args.batch_size
 #     )
     
-#     logger.info("\n✅ Fine-tuning completed!")
-#     logger.info(f"📁 Model saved to: {output_dir / 'best_model'}")
+#     logger.info("\nFine-tuning completed!")
+#     logger.info(f"Model saved to: {output_dir / 'best_model'}")
     
 #     if args.eval_baseline:
 #         improvement = metrics["eval_bleu"] - baseline_bleu
-#         logger.info(f"📊 BLEU improvement: +{improvement:.2f}")
+#         logger.info(f"BLEU improvement: +{improvement:.2f}")
 
 
 # if __name__ == "__main__":
