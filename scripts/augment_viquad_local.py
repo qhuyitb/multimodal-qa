@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 # Rule: Only replace if it makes sense in QA context!
 VIETNAMESE_SYNONYMS = {
     # Question words - SAFE replacements
-    "gì": ["thứ gì", "điều gì", "phần nào"],  # OK but limited benefit
+    "gì": ["thứ gì", "điều gì", "phần nào"],  
     "ai": ["người nào", "nhân vật nào"],
     "khi nào": ["lúc nào", "thời điểm nào", "thời gian nào"],
     "ở đâu": ["tại đâu", "nơi nào", "địa điểm nào"],
@@ -70,8 +70,8 @@ BLACKLIST_WORDS = {
     "được",  # "được" → "đạt được" is WRONG in "được sử dụng"
     "có",    # "có" → "sở hữu" is WEIRD
     "đến",   # Context dependent
-    "là",    # Too important
-    "của",   # Too important
+    "là",    
+    "của",  
     "trong", # Preposition
     "trên", "dưới", "sau", "trước",  # Positional
 }
@@ -88,15 +88,12 @@ class ContextAwareQADataAugmenter:
         """Check if it's safe to replace this word"""
         word_lower = word.lower().strip(".,!?;:\"'")
         
-        # Don't replace blacklisted words
         if word_lower in BLACKLIST_WORDS:
             return False
         
-        # Don't replace proper nouns (capitalized mid-sentence)
         if position > 0 and word[0].isupper():
             return False
         
-        # Don't replace if not in dictionary
         if word_lower not in self.synonym_dict:
             return False
         
@@ -246,7 +243,7 @@ def augment_viquad_local(
     original_examples = list(dataset['train'])
     
     if test_mode:
-        logger.info("🧪 TEST MODE: Processing only 100 examples")
+        logger.info("TEST MODE: Processing only 100 examples")
         original_examples = original_examples[:100]
     
     logger.info(f"Augmenting {len(original_examples):,} examples...")
@@ -280,7 +277,7 @@ def augment_viquad_local(
     
     # Statistics
     logger.info("\n" + "="*70)
-    logger.info("✅ AUGMENTATION COMPLETE")
+    logger.info("AUGMENTATION COMPLETE")
     logger.info("="*70)
     
     for split in augmented_dataset.keys():
@@ -291,7 +288,7 @@ def augment_viquad_local(
         logger.info(f"{split:12s}: {orig_size:6,} → {aug_size:6,} (+{increase:6,}, +{pct:.1f}%)")
     
     logger.info("="*70)
-    logger.info(f"📁 Output: {output_path}")
+    logger.info(f"Output: {output_path}")
     logger.info("="*70)
 
 

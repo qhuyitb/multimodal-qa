@@ -157,22 +157,22 @@ def benchmark_on_viquad(num_samples: int = 100):
     best_recall = max(results.items(), key=lambda x: x[1]['recall@10'])
     best_mrr = max(results.items(), key=lambda x: x[1]['mrr'])
     
-    print(f"\n✅ Best Recall@10: {best_recall[0]} ({best_recall[1]['recall@10']:.4f})")
-    print(f"✅ Best MRR: {best_mrr[0]} ({best_mrr[1]['mrr']:.4f})")
+    print(f"\nBest Recall@10: {best_recall[0]} ({best_recall[1]['recall@10']:.4f})")
+    print(f"Best MRR: {best_mrr[0]} ({best_mrr[1]['mrr']:.4f})")
     
     # Improvement analysis
     naive_recall = results["Naive Chunking"]['recall@10']
     smart_recall = results["Smart Chunking"]['recall@10']
     improvement = (smart_recall - naive_recall) / naive_recall * 100
     
-    print(f"\n📊 Smart Chunking Improvement:")
+    print(f"\nSmart Chunking Improvement:")
     print(f"   Recall@10: {improvement:+.2f}%")
     
     bm25_mrr = results["BM25 Only"]['mrr']
     hybrid_mrr = results["Hybrid (α=0.7)"]['mrr']
     hybrid_improvement = (hybrid_mrr - bm25_mrr) / bm25_mrr * 100
     
-    print(f"\n📊 Hybrid Search Improvement (vs BM25):")
+    print(f"\nHybrid Search Improvement (vs BM25):")
     print(f"   MRR: {hybrid_improvement:+.2f}%")
 
 
