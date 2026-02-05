@@ -277,7 +277,7 @@ if __name__ == "__main__":
             chunking_strategy="sentence"
         )
         
-        print(f"\n✅ Processing complete:")
+        print(f"\nProcessing complete:")
         print(f"   Chunks: {result['num_chunks']}")
         print(f"   Duration: {result['metadata']['total_duration']:.1f}s")
         
@@ -302,5 +302,5 @@ if __name__ == "__main__":
                 for src in answer['sources']:
                     print(f"  - {src['timestamp']} (relevance: {src['relevance']:.2f})")
     else:
-        print(f"\n⚠️  Sample video not found: {video_path}")
+        print(f"\nSample video not found: {video_path}")
         print("Place a video file at the path above to test the pipeline.")
