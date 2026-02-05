@@ -17,4 +17,4 @@ results/
 
 # Vector DB files
 *.sqlite3
-chroma.sqlite3
+chroma.sqlite3api.log
