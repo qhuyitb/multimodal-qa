@@ -20,84 +20,98 @@ class HybridRetriever:
         self,
         embedding_model: str = "paraphrase-multilingual-mpnet-base-v2",
         collection_name: str = "multimodal_qa",
-        chroma_persist_dir: str = "./data/vector_db"
+        chroma_persist_dir: str | None = None
     ):
-        # Semantic search
-        self.encoder = SentenceTransformer(embedding_model)
+        # Semantic search encoder (force CPU to avoid meta-tensor issues)
+        self.encoder = SentenceTransformer(embedding_model, device="cpu")
+
+        # In-memory vector database (no persistence)
+        self.chroma_client = chromadb.Client()
+
+        # Always create/get in-memory collection (we pass embeddings manually)
+        self.collection = self.chroma_client.get_or_create_collection(
+            name=collection_name,
+            metadata={"description": "Multimodal QA documents (in-memory)"}
+        )
         
-        # Vector database (new API)
-        self.chroma_client = chromadb.PersistentClient(path=chroma_persist_dir)
-        
-        try:
-            self.collection = self.chroma_client.get_collection(collection_name)
-        except:
-            self.collection = self.chroma_client.create_collection(
-                name=collection_name,
-                metadata={"description": "Multimodal QA documents and videos"}
-            )
-        
-        # BM25 (will be initialized when documents are indexed)
+        # BM25 (initialized when documents are indexed)
         self.bm25 = None
-        self.documents = []
-        self.doc_metadata = []
-        self.doc_ids = []
-        self.id_to_index = {}
+        self.documents: List[str] = []
+        self.doc_metadata: List[Dict] = []
+        self.doc_ids: List[str] = []
+        self.id_to_index: Dict[str, int] = {}
     
     def index_documents(
         self,
         documents: List[str],
         ids: Optional[List[str]] = None,
         metadata: Optional[List[Dict]] = None,
-        batch_size: int = 32
+        batch_size: int = 32,
+        append: bool = False
     ):
-        """
-        Index documents into both BM25 and vector store
-        
-        Args:
-            documents: List of document texts
-            ids: Optional list of IDs
-            metadata: Optional metadata for each document
-            batch_size: Batch size for encoding
+        """Index documents into both BM25 and vector store.
+
+        When append=True, new docs are added while keeping existing ones.
         """
         if not documents:
             return
-        
-        self.documents = documents
-        self.doc_metadata = metadata or [{} for _ in documents]
-        
-        # Generate IDs if not provided
-        if ids is None:
-            ids = [f"doc_{i}" for i in range(len(documents))]
-        
-        self.doc_ids = ids  # Store IDs for mapping
-        self.id_to_index = {doc_id: i for i, doc_id in enumerate(ids)}  # Create mapping
-        
-        # Index to BM25
-        tokenized_docs = [doc.lower().split() for doc in documents]
+
+        new_docs = documents
+        new_meta = metadata or [{} for _ in new_docs]
+        new_ids = ids
+
+        if new_ids is None:
+            offset = len(self.documents)
+            new_ids = [f"doc_{offset + i}" for i in range(len(new_docs))]
+
+        if append:
+            # Keep existing
+            existing_docs = self.documents
+            existing_meta = self.doc_metadata
+            existing_ids = self.doc_ids
+
+            self.documents = existing_docs + new_docs
+            self.doc_metadata = existing_meta + new_meta
+            self.doc_ids = existing_ids + new_ids
+        else:
+            self.documents = new_docs
+            self.doc_metadata = new_meta
+            self.doc_ids = new_ids
+
+        # Rebuild id -> index map
+        self.id_to_index = {doc_id: i for i, doc_id in enumerate(self.doc_ids)}
+
+        # Rebuild BM25 with all docs
+        tokenized_docs = [doc.lower().split() for doc in self.documents]
         self.bm25 = BM25Okapi(tokenized_docs)
-        
-        # Index to ChromaDB with batching
-        for i in range(0, len(documents), batch_size):
-            batch_docs = documents[i:i + batch_size]
-            batch_meta = self.doc_metadata[i:i + batch_size]
-            batch_ids = ids[i:i + batch_size]
-            
-            # Generate embeddings
+
+        # Only add new docs to ChromaDB
+        for i in range(0, len(new_docs), batch_size):
+            batch_docs = new_docs[i:i + batch_size]
+            batch_meta = new_meta[i:i + batch_size]
+            batch_ids = new_ids[i:i + batch_size]
+
             embeddings = self.encoder.encode(
                 batch_docs,
-                show_progress_bar=True,
+                show_progress_bar=False,
                 batch_size=batch_size
             )
-            
-            # Add to collection
+
             self.collection.add(
                 embeddings=embeddings.tolist(),
                 documents=batch_docs,
                 metadatas=batch_meta,
                 ids=batch_ids
             )
-        
-        print(f"✅ Indexed {len(documents)} documents")
+
+        print(f"Indexed {len(new_docs)} documents (total: {len(self.documents)})")
+    
+    def load_existing_documents(self):
+        """No-op for in-memory client (kept for compatibility)."""
+        if not self.documents:
+            print("Warning: No documents found in memory")
+        else:
+            print(f"Documents already in memory: {len(self.documents)}")
     
     def bm25_search(
         self,
@@ -125,34 +139,70 @@ class HybridRetriever:
     def semantic_search(
         self,
         query: str,
-        top_k: int = 10
+        top_k: int = 10,
+        document_filter: str = None
     ) -> List[Dict]:
         """
         Semantic search using embeddings
         
+        Args:
+            query: Search query
+            top_k: Number of results
+            document_filter: Filter by document filename or source
+        
         Returns:
             List of results with documents and scores
         """
-        # Encode query
         query_embedding = self.encoder.encode([query])[0]
         
-        # Query ChromaDB
+        where_filter = None
+        if document_filter:
+            where_filter = {
+                "$or": [
+                    {"filename": {"$contains": document_filter}},
+                    {"source": {"$contains": document_filter}}
+                ]
+            }
+        
         results = self.collection.query(
             query_embeddings=[query_embedding.tolist()],
-            n_results=top_k
+            n_results=top_k,
+            where=where_filter
         )
         
-        # Format results
         formatted = []
         for i in range(len(results['documents'][0])):
             formatted.append({
                 'id': results['ids'][0][i],
                 'document': results['documents'][0][i],
-                'score': 1.0 - results['distances'][0][i],  # Convert distance to similarity
+                'score': 1.0 - results['distances'][0][i],
                 'metadata': results['metadatas'][0][i]
             })
         
         return formatted
+
+    def clear(self):
+        """Clear all indexed documents (in-memory)."""
+        try:
+            # Drop and recreate collection to clear vector data
+            name = self.collection.name
+            self.chroma_client.delete_collection(name)
+            self.collection = self.chroma_client.create_collection(
+                name=name,
+                metadata=self.collection.metadata
+            )
+        except Exception:
+            # Fallback: recreate client/collection
+            self.chroma_client = chromadb.Client()
+            self.collection = self.chroma_client.create_collection(name=name)
+
+        # Clear in-memory structures
+        self.bm25 = None
+        self.documents = []
+        self.doc_metadata = []
+        self.doc_ids = []
+        self.id_to_index = {}
+        print("In-memory retrieval cleared")
     
     def hybrid_search(
         self,
@@ -160,7 +210,8 @@ class HybridRetriever:
         top_k: int = 10,
         alpha: float = 0.5,
         bm25_weight: float = None,
-        semantic_weight: float = None
+        semantic_weight: float = None,
+        document_filter: str = None
     ) -> List[Dict]:
         """
         Hybrid search combining BM25 and semantic search
@@ -171,31 +222,35 @@ class HybridRetriever:
             alpha: Balance between semantic (1.0) and BM25 (0.0)
             bm25_weight: Override alpha for BM25
             semantic_weight: Override alpha for semantic
+            document_filter: Filter by document filename
         
         Returns:
             List of ranked results
         """
-        # Use alpha or explicit weights
         if bm25_weight is None:
             bm25_weight = 1.0 - alpha
         if semantic_weight is None:
             semantic_weight = alpha
         
-        # Get results from both methods
         bm25_results = self.bm25_search(query, top_k=top_k * 2)
-        semantic_results = self.semantic_search(query, top_k=top_k * 2)
+        semantic_results = self.semantic_search(query, top_k=top_k * 2, document_filter=document_filter)
         
-        # Normalize scores
         bm25_scores = self._normalize_scores([s for _, s in bm25_results])
         semantic_scores_dict = {r['id']: r['score'] for r in semantic_results}
         
-        # Combine scores
         combined_scores = {}
         
-        # Add BM25 scores
         for (idx, _), norm_score in zip(bm25_results, bm25_scores):
             if idx < len(self.doc_ids):
                 doc_id = self.doc_ids[idx]
+                
+                if document_filter:
+                    metadata = self.doc_metadata[idx] if idx < len(self.doc_metadata) else {}
+                    filename = metadata.get('filename', '')
+                    source = metadata.get('source', '')
+                    if document_filter not in filename and document_filter not in source:
+                        continue
+                
                 combined_scores[doc_id] = {
                     'bm25_score': norm_score * bm25_weight,
                     'semantic_score': 0.0,
