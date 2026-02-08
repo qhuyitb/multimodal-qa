@@ -13,6 +13,7 @@ from pathlib import Path
 
 
 class XLMRobertaQA:
+    """Model QA đa ngôn ngữ dựa trên XLM-RoBERTa với LoRA"""
     
     def __init__(
         self,
@@ -48,7 +49,6 @@ class XLMRobertaQA:
         max_length: int = 384,
         doc_stride: int = 128
     ) -> Dict:
-        # Tokenize context và question
         tokenized = self.tokenizer(
             examples["question"],
             examples["context"],
@@ -60,7 +60,6 @@ class XLMRobertaQA:
             padding="max_length"
         )
         
-        # Map answer positions sang token positions
         sample_mapping = tokenized.pop("overflow_to_sample_mapping")
         offset_mapping = tokenized.pop("offset_mapping")
         
@@ -74,17 +73,14 @@ class XLMRobertaQA:
             sample_index = sample_mapping[i]
             answers = examples["answers"][sample_index]
             
-            # Nếu không có answer (is_impossible)
             if len(answers["answer_start"]) == 0:
                 tokenized["start_positions"].append(cls_index)
                 tokenized["end_positions"].append(cls_index)
                 continue
             
-            # Lấy answer đầu tiên
             start_char = answers["answer_start"][0]
             end_char = start_char + len(answers["text"][0])
             
-            # Tìm token start/end
             token_start_index = 0
             while token_start_index < len(offsets) and offsets[token_start_index][0] <= start_char:
                 token_start_index += 1
@@ -95,7 +91,6 @@ class XLMRobertaQA:
                 token_end_index -= 1
             token_end_index += 1
             
-            # Kiểm tra answer có nằm trong context không
             sequence_ids = tokenized.sequence_ids(i)
             context_start = sequence_ids.index(1) if 1 in sequence_ids else 0
             context_end = len(sequence_ids) - 1 - sequence_ids[::-1].index(1) if 1 in sequence_ids else len(sequence_ids)
@@ -118,7 +113,6 @@ class XLMRobertaQA:
         max_length: int = 384,
         doc_stride: int = 128
     ) -> Dict:
-        # Tương tự train nhưng giữ example_id và offset_mapping để post-process
         tokenized = self.tokenizer(
             examples["question"],
             examples["context"],
@@ -137,7 +131,6 @@ class XLMRobertaQA:
             sample_index = sample_mapping[i]
             tokenized["example_id"].append(examples["id"][sample_index])
             
-            # Set context mask
             sequence_ids = tokenized.sequence_ids(i)
             context_index = 1
             tokenized["offset_mapping"][i] = [
@@ -155,8 +148,8 @@ class XLMRobertaQA:
         max_answer_length: int = 50,
         n_best_size: int = 20
     ) -> List[Dict[str, any]]:
-        # Inference cho 1 question-context pair
-        self.model.eval()  # Ensure eval mode
+        """Dự đoán câu trả lời từ question và context"""
+        self.model.eval()
         
         inputs = self.tokenizer(
             question,
@@ -170,38 +163,31 @@ class XLMRobertaQA:
         with torch.no_grad():
             outputs = self.model(**inputs)
         
-        # Get answer spans
         start_logits = outputs.start_logits[0]
         end_logits = outputs.end_logits[0]
         
-        # Lấy sequence_ids để xác định context tokens
         sequence_ids = inputs.sequence_ids(0)
         context_start = sequence_ids.index(1) if 1 in sequence_ids else 0
         context_end = len(sequence_ids) - 1 - sequence_ids[::-1].index(1) if 1 in sequence_ids else len(sequence_ids)
         
-        # Top-k answers - tối ưu hơn với n_best_size
         results = []
         start_indexes = torch.argsort(start_logits, descending=True)[:n_best_size]
         end_indexes = torch.argsort(end_logits, descending=True)[:n_best_size]
         
         for start_idx in start_indexes:
             for end_idx in end_indexes:
-                # Skip invalid spans
                 if end_idx < start_idx or end_idx - start_idx > max_answer_length:
                     continue
                 
-                # Chỉ cho phép answers từ context (sequence_id == 1)
                 if start_idx < context_start or end_idx > context_end:
                     continue
                 
                 answer_tokens = inputs["input_ids"][0][start_idx:end_idx + 1]
                 answer_text = self.tokenizer.decode(answer_tokens, skip_special_tokens=True)
                 
-                # Skip empty answers
                 if not answer_text.strip():
                     continue
                 
-                # Tính score theo product (better than sum)
                 score = (start_logits[start_idx] * end_logits[end_idx]).item()
                 
                 results.append({
@@ -211,14 +197,12 @@ class XLMRobertaQA:
                     "end": end_idx.item()
                 })
                 
-                if len(results) >= top_k * 3:  # Get more candidates
+                if len(results) >= top_k * 3:
                     break
             if len(results) >= top_k * 3:
                 break
         
-        # Nếu không tìm thấy answer nào, return best guess từ context
         if not results:
-            # Tìm span có score cao nhất trong context
             best_score = float('-inf')
             best_start, best_end = context_start, context_start
             
@@ -261,8 +245,7 @@ def create_qa_model(
     checkpoint_path: Optional[Path] = None,
     **kwargs
 ) -> XLMRobertaQA:
-    # Factory function để tạo QA model
-    # Nếu có checkpoint_path, ưu tiên dùng nó làm model_name để tránh load 2 lần
+    """Tạo instance QA model từ checkpoint hoặc pretrained"""
     if checkpoint_path and Path(checkpoint_path).exists():
         return XLMRobertaQA(model_name=str(checkpoint_path), **kwargs)
     
