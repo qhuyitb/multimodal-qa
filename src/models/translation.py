@@ -2,7 +2,7 @@ from typing import Dict, List, Optional, Union
 from pathlib import Path
 import time
 
-# Chỉ hỗ trợ dịch giữa tiếng Anh và tiếng Việt
+
 class TranslationService:
     
     MODEL_MAPPING = {
