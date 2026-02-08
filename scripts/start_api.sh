@@ -6,15 +6,13 @@ set -e
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$PROJECT_ROOT"
 
-echo "=========================================="
 echo "🚀 Starting Multimodal QA API"
-echo "=========================================="
 echo ""
 
 # Check dependencies
-echo "🔍 Checking dependencies..."
+echo "Checking dependencies..."
 if ! python -c "import fastapi" 2>/dev/null; then
-    echo "⚠️  FastAPI not found. Syncing dependencies with uv..."
+    echo "FastAPI not found. Syncing dependencies with uv..."
     uv sync
 fi
 

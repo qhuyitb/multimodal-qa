@@ -1,5 +1,3 @@
-# Helper utilities
-
 from pathlib import Path
 
 

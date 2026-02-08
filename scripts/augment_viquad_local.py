@@ -16,10 +16,9 @@ from tqdm import tqdm
 logging.basicConfig(level=logging.INFO, format='%(message)s')
 logger = logging.getLogger(__name__)
 
-# IMPROVED Vietnamese synonyms - Context-aware
-# Rule: Only replace if it makes sense in QA context!
+
 VIETNAMESE_SYNONYMS = {
-    # Question words - SAFE replacements
+    # Question words 
     "gì": ["thứ gì", "điều gì", "phần nào"],  
     "ai": ["người nào", "nhân vật nào"],
     "khi nào": ["lúc nào", "thời điểm nào", "thời gian nào"],
@@ -65,7 +64,7 @@ VIETNAMESE_SYNONYMS = {
     "vì": ["do", "bởi vì"],
 }
 
-# Blacklist - DO NOT replace these (cause semantic errors)
+# Blacklist 
 BLACKLIST_WORDS = {
     "được",  # "được" → "đạt được" is WRONG in "được sử dụng"
     "có",    # "có" → "sở hữu" is WEIRD
@@ -322,7 +321,6 @@ def main():
     
     args = parser.parse_args()
     
-    # Convert to absolute paths
     project_root = Path(__file__).parent.parent
     input_path = str(project_root / args.input)
     output_path = str(project_root / args.output)

@@ -88,7 +88,7 @@ async def ask_question(
             source_language=request.source_language
         )
         
-        # Format sources
+
         sources = [
             SourceInfo(
                 text=src["text"],

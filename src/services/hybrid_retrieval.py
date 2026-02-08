@@ -12,9 +12,7 @@ import chromadb
 
 
 class HybridRetriever:
-    """
-    Hybrid retrieval combining BM25 and semantic search
-    """
+    """Hybrid retrieval kết hợp BM25 và semantic search"""
     
     def __init__(
         self,
@@ -22,19 +20,15 @@ class HybridRetriever:
         collection_name: str = "multimodal_qa",
         chroma_persist_dir: str | None = None
     ):
-        # Semantic search encoder (force CPU to avoid meta-tensor issues)
         self.encoder = SentenceTransformer(embedding_model, device="cpu")
 
-        # In-memory vector database (no persistence)
         self.chroma_client = chromadb.Client()
 
-        # Always create/get in-memory collection (we pass embeddings manually)
         self.collection = self.chroma_client.get_or_create_collection(
             name=collection_name,
             metadata={"description": "Multimodal QA documents (in-memory)"}
         )
         
-        # BM25 (initialized when documents are indexed)
         self.bm25 = None
         self.documents: List[str] = []
         self.doc_metadata: List[Dict] = []
@@ -49,10 +43,7 @@ class HybridRetriever:
         batch_size: int = 32,
         append: bool = False
     ):
-        """Index documents into both BM25 and vector store.
-
-        When append=True, new docs are added while keeping existing ones.
-        """
+        """Index documents vào cả BM25 và vector store"""
         if not documents:
             return
 
@@ -65,7 +56,6 @@ class HybridRetriever:
             new_ids = [f"doc_{offset + i}" for i in range(len(new_docs))]
 
         if append:
-            # Keep existing
             existing_docs = self.documents
             existing_meta = self.doc_metadata
             existing_ids = self.doc_ids
@@ -78,14 +68,11 @@ class HybridRetriever:
             self.doc_metadata = new_meta
             self.doc_ids = new_ids
 
-        # Rebuild id -> index map
         self.id_to_index = {doc_id: i for i, doc_id in enumerate(self.doc_ids)}
 
-        # Rebuild BM25 with all docs
         tokenized_docs = [doc.lower().split() for doc in self.documents]
         self.bm25 = BM25Okapi(tokenized_docs)
 
-        # Only add new docs to ChromaDB
         for i in range(0, len(new_docs), batch_size):
             batch_docs = new_docs[i:i + batch_size]
             batch_meta = new_meta[i:i + batch_size]

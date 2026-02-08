@@ -7,6 +7,7 @@ import uuid
 from ..utils.helpers import get_data_dir
 
 class ChromaVectorStore:
+    """Service quản lý vector store với ChromaDB"""
     
     def __init__(
         self,
@@ -44,6 +45,7 @@ class ChromaVectorStore:
         metadatas: Optional[List[Dict[str, Any]]] = None,
         ids: Optional[List[str]] = None
     ) -> List[str]:
+        """Thêm documents vào vector store"""
         if not texts:
             return []
         
@@ -72,6 +74,7 @@ class ChromaVectorStore:
         where: Optional[Dict[str, Any]] = None,
         where_document: Optional[Dict[str, Any]] = None
     ) -> Dict[str, List]:
+        """Tìm kiếm semantic trong vector store"""
         results = self.collection.query(
             query_texts=[query],
             n_results=n_results,
@@ -94,6 +97,7 @@ class ChromaVectorStore:
         keyword_weight: float = 0.3,
         final_top_k: int = 5
     ) -> Dict[str, List]:
+        """Kết hợp semantic và keyword search"""
         semantic_results = self.semantic_search(query, n_results=n_results)
         
         if not semantic_results['documents']:

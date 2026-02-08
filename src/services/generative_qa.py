@@ -11,7 +11,7 @@ from ..models.llm import get_llm_service, LLMService
 
 @dataclass
 class GenerativeQAResult:
-    """Result from generative QA"""
+    """Kết quả từ generative QA"""
     answer: str
     score: float
     context: str
@@ -24,9 +24,7 @@ class GenerativeQAResult:
 
 
 class GenerativeQAService:
-    """
-    Generative QA combining extractive and LLM-based approaches
-    """
+    """Service QA generative kết hợp extractive và LLM"""
     
     def __init__(
         self,
@@ -37,21 +35,11 @@ class GenerativeQAService:
         model_name: str = "qwen2.5:7b",
         ollama_base_url: str = "http://localhost:11434"
     ):
-        """
-        Initialize generative QA service
-        
-        Args:
-            extractive_qa_service: AdaptiveQAService for extractive QA
-            llm_service: LLM service instance (will create if None)
-            enable_llm: Use LLM for generation
-            llm_threshold: Confidence threshold to use LLM (if extractive score < threshold)
-            model_name: LLM model name
-        """
+        """Khởi tạo generative QA service"""
         self.extractive_qa = extractive_qa_service
         self.enable_llm = enable_llm
         self.llm_threshold = llm_threshold
         
-        # Initialize LLM service
         if enable_llm:
             if llm_service is None:
                 print(f"Initializing Ollama LLM: {model_name}")
@@ -81,21 +69,7 @@ class GenerativeQAService:
         max_new_tokens: int = 256,
         temperature: float = 0.3
     ) -> GenerativeQAResult:
-        """
-        Answer question with generative LLM
-        
-        Args:
-            question: User question
-            context: Retrieved context
-            source_language: Source language
-            target_language: Target language  
-            force_generative: Always use LLM (default True)
-            max_new_tokens: Max tokens for generation
-            temperature: LLM temperature
-            
-        Returns:
-            GenerativeQAResult with answer and metadata
-        """
+        """Trả lời câu hỏi với generative LLM"""
         start_time = time.time()
         self.stats["total_queries"] += 1
         

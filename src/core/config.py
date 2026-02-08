@@ -5,6 +5,7 @@ from typing import Dict, Any
 _config_cache = None
 
 def get_config() -> Dict[str, Any]:
+    """Load config từ YAML file"""
     global _config_cache
     
     if _config_cache is not None:

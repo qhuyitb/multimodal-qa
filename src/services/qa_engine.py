@@ -3,6 +3,7 @@ from pathlib import Path
 
 
 class QAEngine:
+    """Engine QA chính kết hợp vector search, translation và language detection"""
     
     def __init__(
         self,
@@ -35,8 +36,6 @@ class QAEngine:
             detection = self.language_detector.detect_from_text(question)
             query_language = detection.get("language", "unknown")
         
-        # Perform similarity search
-        # Multilingual embeddings allow cross-language retrieval
         search_results = self.vector_store.search(
             query=question,
             top_k=top_k,
@@ -53,12 +52,10 @@ class QAEngine:
                 "translated": False
             }
         
-        # Extract top result as answer
         top_result = search_results[0]
         answer_text = top_result.get("text", "")
         confidence = top_result.get("score", 0.0)
         
-        # Prepare sources
         sources = []
         for result in search_results:
             source_info = {

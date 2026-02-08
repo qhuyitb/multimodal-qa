@@ -448,7 +448,7 @@ MIT License - see [LICENSE](LICENSE) for details
 ```bibtex
 @software{multimodal_qa_2026,
   title = {Multimodal QA: Production Multilingual Question Answering},
-  author = {Huy Nguyen},
+  author = {To Huy},
   year = {2026},
   url = {https://github.com/qhuyitb/multimodal-qa}
 }

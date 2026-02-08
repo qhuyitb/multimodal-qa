@@ -12,6 +12,7 @@ output_base_dir = get_data_dir("output/documents")
 os.makedirs(output_base_dir, exist_ok=True)
 
 def extract_pdf_text(pdf_path, output_dir=None):
+    """Trích xuất text từ PDF file"""
     output_dir = pathlib.Path(output_dir or output_base_dir) / "pdf"
     os.makedirs(output_dir, exist_ok=True)
     
@@ -28,6 +29,7 @@ def extract_pdf_text(pdf_path, output_dir=None):
     return text
 
 def extract_docx_text(docx_path, output_dir=None):
+    """Trích xuất text từ DOCX file"""
     output_dir = pathlib.Path(output_dir or output_base_dir) / "docx"
     os.makedirs(output_dir, exist_ok=True)
     
@@ -48,12 +50,9 @@ def _format_table(table):
     if not table:
         return ""
     col_widths = [max(len(str(row[col])) for row in table) for col in range(len(table[0]))]
-        col_widths.append(max_width)
     
-    # Vẽ border
     separator = "-" + "-".join("-" * (w + 2) for w in col_widths) + "-\n"
     
-    # Format từng row
     result = separator
     for row in table:
         result += "|"
@@ -64,7 +63,6 @@ def _format_table(table):
     return result
 
 
-# Format table từ DOCX thành text 
 def _extract_table_from_docx(table):
     if not table:
         return ""
@@ -76,6 +74,7 @@ def _extract_table_from_docx(table):
 
 
 class DocumentExtractor:
+    """Extractor cho các loại tài liệu (PDF, DOCX)"""
     
     def __init__(self, output_dir=None):
         self.output_dir = output_dir or output_base_dir

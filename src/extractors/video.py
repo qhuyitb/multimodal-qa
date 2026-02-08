@@ -1,4 +1,3 @@
-# Trích xuất video (audio -> text)
 import whisper
 import os
 import json
@@ -13,7 +12,7 @@ output_base_dir = get_data_dir("output/transcripts")
 os.makedirs(output_base_dir, exist_ok=True)
 
 def extract_video_text(video_path, output_dir=None):
-    
+    """Trích xuất text từ video sử dụng Whisper STT"""
     if output_dir is None:
         output_txt_dir = output_base_dir / "txt"
         output_json_dir = output_base_dir / "json"

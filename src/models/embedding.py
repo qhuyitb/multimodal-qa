@@ -5,6 +5,7 @@ import torch
 import re
 
 class MultilingualEmbedding:
+    """Service embedding đa ngôn ngữ sử dụng SentenceTransformer"""
     
     def __init__(
         self, 
@@ -29,6 +30,7 @@ class MultilingualEmbedding:
         normalize: bool = True,
         show_progress: bool = False
     ) -> np.ndarray:
+        """Chuyển văn bản thành vector embeddings"""
         if isinstance(texts, str):
             texts = [texts]
         
@@ -67,6 +69,7 @@ class MultilingualEmbedding:
         return results
     
     def get_model_info(self) -> dict:
+        """Trả về thông tin model"""
         return {
             'model_name': self.model_name,
             'embedding_dim': self.embedding_dim,
@@ -77,6 +80,7 @@ class MultilingualEmbedding:
 
 
 class HybridEmbedding:
+    """Kết hợp semantic và keyword search"""
     
     def __init__(
         self,
@@ -89,7 +93,6 @@ class HybridEmbedding:
         self.keyword_weight = keyword_weight
     
     def _extract_keywords(self, text: str) -> set:
-        
         words = re.findall(r'\w+', text.lower())
         return set(words)
     
@@ -145,5 +148,4 @@ class HybridEmbedding:
         return hybrid_results
 
 
-# Alias để dễ import
 EmbeddingModel = MultilingualEmbedding

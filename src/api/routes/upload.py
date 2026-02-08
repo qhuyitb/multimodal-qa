@@ -1,8 +1,7 @@
-"""Simplified Document Upload and Indexing API.
+"""API Upload và Index Tài liệu.
 
-Upload files and automatically index into ChromaDB for QA.
-Only responsibility here: read file -> simple chunk -> store in ChromaDB.
-Chunking and embedding are kept lightweight to avoid slow uploads.
+Upload files và tự động index vào ChromaDB cho QA.
+Nhiệm vụ: đọc file -> chunk đơn giản -> lưu vào ChromaDB.
 """
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
 from pathlib import Path
@@ -37,7 +36,6 @@ async def _process_file(file: UploadFile, conversational_qa):
     if not content:
         raise HTTPException(status_code=400, detail="File rỗng")
 
-    # Extract text
     if file_ext == ".txt":
         content_text = content.decode('utf-8')
     elif file_ext == ".pdf":

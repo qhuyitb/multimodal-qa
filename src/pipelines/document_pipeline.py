@@ -6,6 +6,7 @@ from utils.helpers import get_data_dir
 
 
 class DocumentPipeline:
+    """Pipeline xử lý tài liệu: trích xuất, dịch, và index"""
     
     def __init__(
         self,
@@ -32,6 +33,7 @@ class DocumentPipeline:
         index_content: bool = True,
         index_translation: bool = False
     ) -> Dict[str, Any]:
+        """Xử lý document: trích xuất, dịch, và index vào vector store"""
         results = {
             "document_path": str(document_path),
             "success": False,

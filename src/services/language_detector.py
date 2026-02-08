@@ -3,6 +3,7 @@ from pathlib import Path
 
 
 class LanguageDetector:
+    """Service phát hiện ngôn ngữ từ text, audio, hoặc document"""
     
     def __init__(self):
         self._langdetect_available = False
@@ -25,6 +26,7 @@ class LanguageDetector:
             pass
     
     def detect_from_text(self, text: str, method: str = "auto") -> Dict[str, Any]:
+        """Phát hiện ngôn ngữ từ text"""
         if not text or len(text.strip()) < 10:
             return {"language": "unknown", "confidence": 0.0}
         
@@ -65,6 +67,7 @@ class LanguageDetector:
         whisper_model: Optional[Any] = None,
         sample_duration: int = 30
     ) -> Dict[str, Any]:
+        """Phát hiện ngôn ngữ từ file audio"""
         import whisper
         
         if whisper_model is None:
@@ -87,6 +90,7 @@ class LanguageDetector:
         }
     
     def detect_from_document(self, document_path: Path, sample_size: int = 5000) -> Dict[str, Any]:
+        """Phát hiện ngôn ngữ từ document"""
         text = ""
         
         if document_path.suffix == ".txt":
